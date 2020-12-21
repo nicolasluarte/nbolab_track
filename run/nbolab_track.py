@@ -60,10 +60,10 @@ else:
 # set the background, uses the background folder as default
 if args.background is not None:
     bg = cv2.imread(args.background, cv2.IMREAD_GRAYSCALE)
-    print("loaded background from " + args.background)
+    print("Background size:" + str(bg.shape))
 else:
     bg = cv2.imread(backgrounds + '/bg_' + str(hostname) + '.png', cv2.IMREAD_GRAYSCALE)
-    print("Loaded: " + str(bg.shape))
+    print("Background size:" + str(bg.shape))
 
 # set fps control
 if args.fps is not None:
@@ -75,6 +75,8 @@ else:
 
 # set the capture device
 stream = PiGear(resolution=(320, 240), framerate=fps, colorspace='COLOR_BGR2GRAY').start()
+test_frame = stream.read()
+print("Foreground size: " + str(test_frame.shape))
 
 """
     Program main loop
