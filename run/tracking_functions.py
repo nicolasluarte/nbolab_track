@@ -31,9 +31,11 @@ def contour_extraction(image):
     """
     _, thresholded = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
     contours, hierarchy = cv2.findContours(thresholded, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    canvas = np.zeros((image.shape[0], image.shape[1]))
-    extraction = cv2.drawContours(canvas, [max(contours, key = cv2.contourArea)], -1, 255, thickness=-1)
-    print("ASDAD")
+    if len(contours) != 0:
+        canvas = np.zeros((image.shape[0], image.shape[1]))
+        extraction = cv2.drawContours(canvas, [max(contours, key = cv2.contourArea)], -1, 255, thickness=-1)
+    else:
+        extraction = thresholded
     return extraction
 
 def bgfg_diff(background, foreground, d, sigma1, sigma2):
