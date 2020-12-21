@@ -101,7 +101,7 @@ def fast_track(image):
     centroidX = int(M['m10'] / M['m00'])
     centroidY = int(M['m01'] / M['m00'])
 
-def take_background(path, capture, d, sigma1, sigma2, height=240, width=340):
+def take_background(path, capture, d, sigma1, sigma2, height=240, width=320):
     """
         Simple function to take the background image
         Uses a bilateral filter on the image
