@@ -92,7 +92,7 @@ then
 	echo "Performing repo update"
 	for ((i=0; i<${#IP[@]}; i++))
 	do 
-		ssh ${IP[$i]} "sudo rm -rf uni &&
+		ssh ${IP[$i]} "sudo rm -rf nbolab_track &&
 			git clone https://github.com/nicolasluarte/nbolab_track.git"
 	done
 fi
