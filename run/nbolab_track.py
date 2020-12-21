@@ -119,13 +119,14 @@ with open(csv_files + label + '.csv', 'w') as f:
         # read a single frame
         frame = stream.read()
 
-        ### EXEC TIME CALC ###
-        print("--- %s seconds ---" % (time.time() - start_time))
-        ###           ###
 
         ### IMAGE PROCESSING ###
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
         frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
+
+        ### EXEC TIME CALC ###
+        print("--- %s seconds ---" % (time.time() - start_time))
+        ###           ###
         contours = contour_extraction(frame_diff)
         frame_post = postprocess_image(contours, kx, ky)
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
