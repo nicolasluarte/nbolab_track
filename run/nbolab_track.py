@@ -122,9 +122,8 @@ with open(csv_files + label + '.csv', 'w') as f:
         ### IMAGE PROCESSING ###
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
         frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
-        #contours = contour_extraction(frame_diff)
-        #frame_post = postprocess_image(contours, kx, ky)
-        frame_post = postprocess_image(frame_diff, kx, ky)
+        contours = contour_extraction(frame_diff)
+        frame_post = postprocess_image(contours, kx, ky)
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         ### IMAGE PROCESSING END ###
 
