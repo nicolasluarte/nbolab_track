@@ -133,14 +133,14 @@ with open(csv_files + label + '.csv', 'w') as f:
         ###           ###
 
         ### POINTS EXTRACTION ###
-        M = cv2.moments(frame_post)
-        centroidX = int(M['m10'] / M['m00'])
-        centroidY = int(M['m01'] / M['m00'])
-        tailX = 0
-        tailY = 0
-        headX = 0
-        headY = 0
-        print(centroidX, centroidY)
+        if nc != 0:
+            M = cv2.moments(frame_post)
+            centroidX = int(M['m10'] / M['m00'])
+            centroidY = int(M['m01'] / M['m00'])
+            tailX = 0
+            tailY = 0
+            headX = 0
+            headY = 0
         ### POINTS EXTRACTION END ###
 
         ### PARSING DATA ###
