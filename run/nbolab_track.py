@@ -93,6 +93,10 @@ sigma1=parser.getint('preprocess', 'sigma_color')
 sigma2=parser.getint('preprocess', 'sigma_space')
 kx=parser.getint('postprocess', 'kernelx')
 ky=parser.getint('postprocess', 'kernely')
+print("Filter size: " + str(d))
+print("Sigma1 size: " + str(sigma1))
+print("Sigma2 size: " + str(sigma2))
+print("Kernel size: " + str((kx, ky)))
 ### PARAMETERS END ###
 
 with open(csv_files + label + '.csv', 'w') as f:
