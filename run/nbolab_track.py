@@ -128,10 +128,6 @@ with open(csv_files + label + '.csv', 'w') as f:
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         ### IMAGE PROCESSING END ###
 
-        ### EXEC TIME CALC ###
-        print("--- %s seconds ---" % (time.time() - start_time))
-        ###           ###
-
         ### POINTS EXTRACTION ###
         if nc != 0:
             M = cv2.moments(frame_post)
@@ -142,6 +138,10 @@ with open(csv_files + label + '.csv', 'w') as f:
             headX = 0
             headY = 0
         ### POINTS EXTRACTION END ###
+
+        ### EXEC TIME CALC ###
+        print("--- %s seconds ---" % (time.time() - start_time))
+        ###           ###
 
         ### PARSING DATA ###
         log = list(map(int, time_stamp.split())) + [centroidX,
