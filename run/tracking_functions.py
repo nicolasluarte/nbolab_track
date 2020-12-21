@@ -12,11 +12,11 @@ def preprocess_image(image, d, sigma1, sigma2):
 
 def postprocess_image(image, kx, ky):
    """
-        Opening image is erosion followed by dilation
+        Close morphological operation is faster and retains the tail 
         It help in removing noise and fillling the gaps within the rat
    """
    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(kx,ky))
-   open_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+   open_image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
    return open_image
 
 def contour_extraction(image):
