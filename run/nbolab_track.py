@@ -121,15 +121,19 @@ with open(csv_files + label + '.csv', 'w') as f:
 
         ### IMAGE PROCESSING ###
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
+        print("--- %s seconds ---" % (time.time() - start_time))
         frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
+        print("--- %s seconds ---" % (time.time() - start_time))
         contours, nc = contour_extraction(frame_diff)
+        print("--- %s seconds ---" % (time.time() - start_time))
         print("Contours: " + str(nc))
         frame_post = postprocess_image(contours, kx, ky)
+        print("--- %s seconds ---" % (time.time() - start_time))
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
+        print("--- %s seconds ---" % (time.time() - start_time))
         ### IMAGE PROCESSING END ###
 
         ### EXEC TIME CALC ###
-        print("--- %s seconds ---" % (time.time() - start_time))
         ###           ###
 
         ### POINTS EXTRACTION ###
