@@ -77,6 +77,8 @@ else:
 stream = PiGear(resolution=(320, 240), framerate=60, colorspace='COLOR_BGR2GRAY').start()
 test_frame = stream.read()
 print("Foreground size: " + str(test_frame.shape))
+# start the empty canvas
+canvas = np.zeros((stream.shape[0], stream.shape[1]))
 
 """
     Program main loop
@@ -127,7 +129,7 @@ with open(csv_files + label + '.csv', 'w') as f:
         frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
         print("--- %s diff seconds ---" % (time.time() - start_time2))
         start_time3 = time.time()
-        contours, nc = contour_extraction(frame_diff)
+        contours, nc = contour_extraction(frame_diff, canvas)
         print("--- %s contours seconds ---" % (time.time() - start_time3))
         print("Contours: " + str(nc))
         start_time4 = time.time()
@@ -148,7 +150,7 @@ with open(csv_files + label + '.csv', 'w') as f:
         ### POINTS EXTRACTION END ###
 
         ### EXEC TIME CALC ###
-        print("--- %s seconds ---" % (time.time() - start_time))
+        print("--- %s Total seconds ---" % (time.time() - start_time))
         ###           ###
 
         ### PARSING DATA ###
