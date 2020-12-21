@@ -129,6 +129,7 @@ with open(csv_files + label + '.csv', 'w') as f:
         ### IMAGE PROCESSING END ###
 
         ### EXEC TIME CALC ###
+        print("--- %s seconds ---" % (time.time() - start_time))
         ###           ###
 
         ### POINTS EXTRACTION ###
