@@ -30,7 +30,7 @@ def contour_extraction(image):
         4. Extracts the contour with the larges area and puts it into the canvas
     """
     _, thresholded = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    contours, hierarchy = cv2.findContours(thresholded, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    contours, hierarchy = cv2.findContours(thresholded, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     canvas = np.zeros((image.shape[0], image.shape[1]))
     extraction = cv2.drawContours(canvas, [max(contours, key = cv2.contourArea)], -1, 255, thickness=-1)
     return extraction
