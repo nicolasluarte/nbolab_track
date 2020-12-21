@@ -120,11 +120,19 @@ with open(csv_files + label + '.csv', 'w') as f:
         frame = stream.read()
 
         ### IMAGE PROCESSING ###
+        start_time1 = time.time()
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
+        print("--- %s filter seconds ---" % (time.time() - start_time1))
+        start_time2 = time.time()
         frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
+        print("--- %s diff seconds ---" % (time.time() - start_time2))
+        start_time3 = time.time()
         contours, nc = contour_extraction(frame_diff)
+        print("--- %s contours seconds ---" % (time.time() - start_time3))
         print("Contours: " + str(nc))
+        start_time4 = time.time()
         frame_post = postprocess_image(contours, kx, ky)
+        print("--- %s post seconds ---" % (time.time() - start_time4))
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         ### IMAGE PROCESSING END ###
 
