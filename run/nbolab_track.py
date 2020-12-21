@@ -112,12 +112,16 @@ with open(csv_files + label + '.csv', 'w') as f:
         # start = timer()
         ### FPS CONTROL END ###
 
-        # read a single frame
-        frame = stream.read()
-
         ### EXEC TIME CALC ### 
         start_time = time.time()
         ###                ###
+
+        # read a single frame
+        frame = stream.read()
+
+        ### EXEC TIME CALC ###
+        print("--- %s seconds ---" % (time.time() - start_time))
+        ###           ###
 
         ### IMAGE PROCESSING ###
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
@@ -126,10 +130,6 @@ with open(csv_files + label + '.csv', 'w') as f:
         frame_post = postprocess_image(contours, kx, ky)
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         ### IMAGE PROCESSING END ###
-
-        ### EXEC TIME CALC ###
-        print("--- %s seconds ---" % (time.time() - start_time))
-        ###           ###
 
         ### POINTS EXTRACTION ###
         M = cv2.moments(frame_post)
@@ -141,7 +141,6 @@ with open(csv_files + label + '.csv', 'w') as f:
         headY = 0
         print(centroidX, centroidY)
         ### POINTS EXTRACTION END ###
-
 
         ### PARSING DATA ###
         log = list(map(int, time_stamp.split())) + [centroidX,
