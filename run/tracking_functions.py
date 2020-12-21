@@ -36,7 +36,7 @@ def contour_extraction(image):
         extraction = cv2.drawContours(canvas, [max(contours, key = cv2.contourArea)], -1, 255, thickness=-1)
     else:
         extraction = thresholded
-    return extraction
+    return extraction, len(contours)
 
 def bgfg_diff(background, foreground, d, sigma1, sigma2):
     """
