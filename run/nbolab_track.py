@@ -78,7 +78,7 @@ stream = PiGear(resolution=(320, 240), framerate=60, colorspace='COLOR_BGR2GRAY'
 test_frame = stream.read()
 print("Foreground size: " + str(test_frame.shape))
 # start the empty canvas
-canvas = np.zeros((stream.shape[0], stream.shape[1]))
+canvas = np.zeros((test_frame.shape[0], test_frame.shape[1]))
 
 """
     Program main loop
