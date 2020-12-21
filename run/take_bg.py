@@ -67,4 +67,4 @@ take_background(path,
         sigma1=parser.getint('preprocess', 'sigma_color'),
         sigma2=parser.getint('preprocess', 'sigma_space'),
         height=240,
-        width=340)
+        width=320)
