@@ -33,7 +33,7 @@ def contour_extraction(image):
     contours, hierarchy = cv2.findContours(thresholded, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     canvas = np.zeros((image.shape[0], image.shape[1]))
     extraction = cv2.drawContours(canvas, [max(contours, key = cv2.contourArea)], -1, 255, thickness=-1)
-    print(str(len(contours)))
+    print("N of contours: " + str(len(contours)))
     return extraction
 
 def bgfg_diff(background, foreground, d, sigma1, sigma2):
