@@ -154,13 +154,14 @@ with open(csv_files + label + '.csv', 'w') as f:
         ###           ###
 
         ### PARSING DATA ###
-        log = list(map(int, time_stamp.split())) + [centroidX,
-                centroidY,
-                tailX,
-                tailY,
-                headX,
-                headY]
-        writer.writerow(log)
+        if nc != 0:
+            log = list(map(int, time_stamp.split())) + [centroidX,
+                    centroidY,
+                    tailX,
+                    tailY,
+                    headX,
+                    headY]
+            writer.writerow(log)
         ### PARSING DATA END ###
 
         ### FPS CONTROL ###
