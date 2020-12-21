@@ -140,14 +140,13 @@ with open(csv_files + label + '.csv', 'w') as f:
         ### IMAGE PROCESSING END ###
 
         ### POINTS EXTRACTION ###
-        if nc != 0:
-            M = cv2.moments(frame_post)
-            centroidX = int(M['m10'] / M['m00'])
-            centroidY = int(M['m01'] / M['m00'])
-            tailX = 0
-            tailY = 0
-            headX = 0
-            headY = 0
+        M = cv2.moments(frame_post)
+        centroidX = int(M['m10'] / M['m00'])
+        centroidY = int(M['m01'] / M['m00'])
+        tailX = 0
+        tailY = 0
+        headX = 0
+        headY = 0
         ### POINTS EXTRACTION END ###
 
         ### EXEC TIME CALC ###
