@@ -131,7 +131,6 @@ with open(csv_files + label + '.csv', 'w') as f:
         start_time3 = time.time()
         #contours, nc = contour_extraction(frame_diff, canvas)
         print("--- %s contours seconds ---" % (time.time() - start_time3))
-        print("Contours: " + str(nc))
         start_time4 = time.time()
         #frame_post = postprocess_image(contours, kx, ky)
         frame_post = postprocess_image(frame_diff, kx, ky)
