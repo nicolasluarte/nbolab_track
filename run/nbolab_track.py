@@ -63,7 +63,7 @@ if args.background is not None:
     print("Background size:" + str(bg.shape))
 else:
     bg = cv2.imread(backgrounds + '/bg_' + str(hostname) + '.png', cv2.IMREAD_GRAYSCALE)
-    print("Background size:" + str(bg.shape))
+    print("Background size:" + str(bg.shape) + "Loaded from: " + backgrounds + '/bg_' + str(hostname) + '.png')
 
 # set fps control
 if args.fps is not None:
