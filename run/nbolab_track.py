@@ -121,9 +121,13 @@ with open(csv_files + label + '.csv', 'w') as f:
 
         ### IMAGE PROCESSING ###
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
+        print("--- %s preprocess seconds ---" % (time.time() - start_time))
         frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
+        print("--- %s diff seconds ---" % (time.time() - start_time))
         contours = contour_extraction(frame_diff)
+        print("--- %s contour seconds ---" % (time.time() - start_time))
         frame_post = postprocess_image(contours, kx, ky)
+        print("--- %s post seconds ---" % (time.time() - start_time))
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         ### IMAGE PROCESSING END ###
 
