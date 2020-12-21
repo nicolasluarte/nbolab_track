@@ -93,7 +93,7 @@ then
 	for ((i=0; i<${#IP[@]}; i++))
 	do 
 		ssh ${IP[$i]} "sudo rm -rf uni &&
-			git clone https://github.com/nicolasluarte/uni.git"
+			git clone https://github.com/nicolasluarte/nbolab_track.git"
 	done
 fi
 

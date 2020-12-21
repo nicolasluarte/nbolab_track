@@ -108,6 +108,10 @@ with open(csv_files + label + '.csv', 'w') as f:
         # read a single frame
         frame = stream.read()
 
+        ### EXEC TIME CALC ### 
+        start_time = time.time()
+        ###                ###
+
         ### IMAGE PROCESSING ###
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
         frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
@@ -126,6 +130,10 @@ with open(csv_files + label + '.csv', 'w') as f:
         headY = 0
         print(centroidX, centroidY)
         ### POINTS EXTRACTION END ###
+
+        ### EXEC TIME CALC ###
+        print("--- %s seconds ---" % (time.time() - start_time))
+        ###           ###
 
         ### PARSING DATA ###
         log = list(map(int, time_stamp.split())) + [centroidX,
