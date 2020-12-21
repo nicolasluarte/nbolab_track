@@ -9,6 +9,7 @@ from time import time as timer
 from pathlib import Path
 import picamera
 import datetime
+import time
 from vidgear.gears import PiGear
 
 """
