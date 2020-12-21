@@ -22,7 +22,7 @@ from pathlib import Path
     csv files
 """
 home = str(Path.home())
-repo = home + '/uni/PHD/tracking_device'
+repo = home + '/nbolab_track'
 config = repo + '/config/config.conf'
 backgrounds = repo + '/background'
 hostname = os.popen('hostname').read().rstrip('\n')
