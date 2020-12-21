@@ -3,7 +3,7 @@ from configparser import ConfigParser
 config = ConfigParser()
 
 config['preprocess'] = {
-        'filter_size': '-1',
+        'filter_size': '5',
         # should be the same
         # < 10 not much effect
         # > 150 strong effect image look "cartoonish"
