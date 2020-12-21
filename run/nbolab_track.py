@@ -129,23 +129,24 @@ with open(csv_files + label + '.csv', 'w') as f:
         frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
         print("--- %s diff seconds ---" % (time.time() - start_time2))
         start_time3 = time.time()
-        #contours, nc = contour_extraction(frame_diff, canvas)
+        contours, nc = contour_extraction(frame_diff, canvas)
         print("--- %s contours seconds ---" % (time.time() - start_time3))
+        print("Contours: " + str(nc))
         start_time4 = time.time()
-        #frame_post = postprocess_image(contours, kx, ky)
-        frame_post = postprocess_image(frame_diff, kx, ky)
+        frame_post = postprocess_image(contours, kx, ky)
         print("--- %s post seconds ---" % (time.time() - start_time4))
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         ### IMAGE PROCESSING END ###
 
         ### POINTS EXTRACTION ###
-        M = cv2.moments(frame_post)
-        centroidX = int(M['m10'] / M['m00'])
-        centroidY = int(M['m01'] / M['m00'])
-        tailX = 0
-        tailY = 0
-        headX = 0
-        headY = 0
+        if nc != 0:
+            M = cv2.moments(frame_post)
+            centroidX = int(M['m10'] / M['m00'])
+            centroidY = int(M['m01'] / M['m00'])
+            tailX = 0
+            tailY = 0
+            headX = 0
+            headY = 0
         ### POINTS EXTRACTION END ###
 
         ### EXEC TIME CALC ###
