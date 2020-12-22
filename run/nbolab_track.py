@@ -182,7 +182,7 @@ if mode == 'experiment':
 
 elif mode == 'preview':
     print("PREVIEW MODE")
-    for i in range(20):
+    for i in range(100):
 
         # read a single frame
         frame = stream.read()
@@ -223,7 +223,7 @@ elif mode == 'preview':
         #cv2.imshow('frame', img_jpg)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-        cv2.imwrite('/home/pi/nbolab_track/stream/stream.jpg', img_jpg) 
+        cv2.imwrite('/home/pi/nbolab_track/stream/pic{:>05}.jpg'.format(i), img_jpg) 
 
 elif mode == 'offline':
     print("OFFLINE MODE")

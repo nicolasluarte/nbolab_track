@@ -8,7 +8,7 @@ IP=($(awk -F ',' '{print $1}' ipfile))
 HOSTNAME=($(awk -F ',' '{print $2}' ipfile))
 
 # variables for running previews
-MAIN='nbolab_track.py/run/nbolab_track.py'
+MAIN='nbolab_track/run/nbolab_track.py'
 BG='uni/PHD/tracking_device/run/take_bg.py'
 STREAM='nbolab_track/stream'
 
