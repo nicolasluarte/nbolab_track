@@ -110,9 +110,9 @@ with open(csv_files + label + '.csv', 'w') as f:
     writer.writerow(["YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "MICROSECOND", "centroid_x", "centroid_y", "tail_x", "tail_y", "head_x", "head_y"])
     ### CSV HEADERS END ###
 
-### EXEC TIME CALC ### 
-start_time = time.time()
-###                ###
+    ### EXEC TIME CALC ### 
+    start_time = time.time()
+    ###                ###
 
     for i in range(30):
 
@@ -166,9 +166,9 @@ start_time = time.time()
         #     diff = timer() - start
         ### FPS CONTROL END ###
 
-### EXEC TIME CALC ###
-print("--- %s Total seconds ---" % (time.time() - start_time))
-###           ###
+    ### EXEC TIME CALC ###
+    print("--- %s Total seconds ---" % (time.time() - start_time))
+    ###           ###
 
 ### STOP ###
 stream.stop()
