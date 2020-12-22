@@ -45,6 +45,7 @@ parserArg.add_argument('--file_name', type=str, help='name of the file')
 parserArg.add_argument('--background', type=str, help='specify the path of back')
 parserArg.add_argument('--capture', type=int, help='set the camera stream vide0 as default')
 parserArg.add_argument('--fps', type=int, help='set frames per second for processing')
+parserArg.add_argument('--mode', type=str, help='set the execution mode')
 args = parserArg.parse_args()
 
 """
@@ -73,6 +74,14 @@ if args.fps is not None:
 else:
     fps = 20
     fps /= 1000
+
+# set the execution mode
+if args.mode is not None:
+    mode = args.mode
+    print("Selected mode is" + str(mode))
+else:
+    mode = 'experiment'
+    print("Selected mode is" + str(mode))
 
 # set the capture device
 stream = PiGear(resolution=(640, 480), framerate=60, colorspace='COLOR_BGR2GRAY').start()
@@ -104,61 +113,63 @@ print("Sigma2 size: " + str(sigma2))
 print("Kernel size: " + str((kx, ky)))
 ### PARAMETERS END ###
 
-with open(csv_files + label + '.csv', 'w') as f:
+if mode == 'experiment':
 
-    ### CSV HEADERS ###
-    writer = csv.writer(f)
-    writer.writerow(["YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "MICROSECOND", "centroid_x", "centroid_y", "tail_x", "tail_y", "head_x", "head_y"])
-    ### CSV HEADERS END ###
+    with open(csv_files + label + '.csv', 'w') as f:
 
-    ### EXEC TIME CALC ### 
-    start_time = time.time()
-    ###                ###
+        ### CSV HEADERS ###
+        writer = csv.writer(f)
+        writer.writerow(["YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "MICROSECOND", "centroid_x", "centroid_y", "tail_x", "tail_y", "head_x", "head_y"])
+        ### CSV HEADERS END ###
 
-    for i in range(30):
+        ### EXEC TIME CALC ### 
+        start_time = time.time()
+        ###                ###
 
-        # read a single frame
-        frame = stream.read()
-        frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
+        for i in range(30):
 
-        ### IMAGE PROCESSING ###
-        start_time1 = time.time()
-        frame_filter = preprocess_image(frame, d, sigma1, sigma2)
-        start_time2 = time.time()
-        frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
-        start_time3 = time.time()
-        contours, nc = contour_extraction(frame_diff, canvas)
-        start_time4 = time.time()
-        frame_post = postprocess_image(contours, kx, ky)
-        time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
-        ### IMAGE PROCESSING END ###
+            # read a single frame
+            frame = stream.read()
+            frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
 
-        ### POINTS EXTRACTION ###
-        if nc != 0:
-            M = cv2.moments(frame_post)
-            centroidX = int(M['m10'] / M['m00'])
-            centroidY = int(M['m01'] / M['m00'])
-            tailX = 0
-            tailY = 0
-            headX = 0
-            headY = 0
-        ### POINTS EXTRACTION END ###
+            ### IMAGE PROCESSING ###
+            start_time1 = time.time()
+            frame_filter = preprocess_image(frame, d, sigma1, sigma2)
+            start_time2 = time.time()
+            frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
+            start_time3 = time.time()
+            contours, nc = contour_extraction(frame_diff, canvas)
+            start_time4 = time.time()
+            frame_post = postprocess_image(contours, kx, ky)
+            time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
+            ### IMAGE PROCESSING END ###
+
+            ### POINTS EXTRACTION ###
+            if nc != 0:
+                M = cv2.moments(frame_post)
+                centroidX = int(M['m10'] / M['m00'])
+                centroidY = int(M['m01'] / M['m00'])
+                tailX = 0
+                tailY = 0
+                headX = 0
+                headY = 0
+            ### POINTS EXTRACTION END ###
 
 
-        ### PARSING DATA ###
-        if nc != 0:
-            log = list(map(int, time_stamp.split())) + [centroidX,
-                    centroidY,
-                    tailX,
-                    tailY,
-                    headX,
-                    headY]
-            writer.writerow(log)
-        ### PARSING DATA END ###
+            ### PARSING DATA ###
+            if nc != 0:
+                log = list(map(int, time_stamp.split())) + [centroidX,
+                        centroidY,
+                        tailX,
+                        tailY,
+                        headX,
+                        headY]
+                writer.writerow(log)
+            ### PARSING DATA END ###
 
-    ### EXEC TIME CALC ###
-    print("--- %s Total seconds ---" % (time.time() - start_time))
-    ###           ###
+        ### EXEC TIME CALC ###
+        print("--- %s Total seconds ---" % (time.time() - start_time))
+        ###           ###
 
-### STOP ###
-stream.stop()
+    ### STOP ###
+    stream.stop()
