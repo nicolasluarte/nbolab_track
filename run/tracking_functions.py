@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import skfmm
+from math import atan2, cos, sin, sqrt, pi
 
 def preprocess_image(image, d, sigma1, sigma2):
     """
@@ -34,10 +35,14 @@ def contour_extraction(image):
     if len(contours) != 0:
         cnt = max(contours, key = cv2.contourArea)
         extraction = cv2.drawContours(canvas, [cnt], -1, 255, thickness=-1)
+        rect = cv2.minAreaRect(cnt)
+        box = cv2.boxPoints(rect)
+        box = np.int0(box)
+        img_rect = cv2.drawContours(image,[box],0,255,2)
     else:
         extraction = canvas
 
-    return extraction, cv2.contourArea(cnt)
+    return extraction, cv2.contourArea(cnt), len(contours), img_rect
 
 def bgfg_diff(background, foreground):
     """
@@ -106,7 +111,7 @@ def fast_track(image):
     centroidX = int(M['m10'] / M['m00'])
     centroidY = int(M['m01'] / M['m00'])
 
-def take_background(path, capture, d, sigma1, sigma2, height=240, width=320):
+def take_background(path, capture, d, sigma1, sigma2, height=480, width=640):
     """
         Simple function to take the background image
         Uses a bilateral filter on the image

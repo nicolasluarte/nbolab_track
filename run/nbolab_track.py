@@ -1,16 +1,48 @@
-from tracking_functions import *
-import os
-import glob
-import csv
-import socket
+"""
+    Used for testing in non-pi, or with regular usb-cam
+    nopi must point to the camera number to use
+"""
 import argparse
-from configparser import ConfigParser
-from time import time as timer
-from pathlib import Path
-import picamera
-import datetime
-import time
-from vidgear.gears import PiGear
+
+"""
+    Read the arguments passed for program execution
+"""
+parserArg = argparse.ArgumentParser(description='Main software parameters')
+parserArg.add_argument('--file_name', type=str, help='name of the file')
+parserArg.add_argument('--background', type=str, help='specify the path of back')
+parserArg.add_argument('--capture', type=int, help='set the camera stream vide0 as default')
+parserArg.add_argument('--fps', type=int, help='set frames per second for processing')
+parserArg.add_argument('--mode', type=str, help='set the execution mode')
+parserArg.add_argument('--width', type=str, help='resize for faster processing')
+parserArg.add_argument('--height', type=str, help='resize for faster processing')
+parserArg.add_argument('-np', '--nopi', type=str, help='activate normal usb-cam mode')
+args = parserArg.parse_args()
+
+if args.nopi is not None:
+    from tracking_functions import *
+    import os
+    import glob
+    import csv
+    import socket
+    from configparser import ConfigParser
+    from time import time as timer
+    from pathlib import Path
+    import datetime
+    import time
+else:
+    from tracking_functions import *
+    import os
+    import glob
+    import csv
+    import socket
+    import argparse
+    from configparser import ConfigParser
+    from time import time as timer
+    from pathlib import Path
+    import picamera
+    import datetime
+    import time
+    from vidgear.gears import PiGear
 
 """
     Paths definition
@@ -21,6 +53,7 @@ from vidgear.gears import PiGear
     Background
     Background file: bg_HOSTNAME.png
     csv files
+    stream folder for preview
 """
 home = str(Path.home())
 repo = home + '/nbolab_track'
@@ -28,6 +61,7 @@ config = repo + '/config/config.conf'
 backgrounds = repo + '/background'
 hostname = os.popen('hostname').read().rstrip('\n')
 csv_files = repo + '/csv_bak'
+stream_folder = repo + '/stream'
 
 """
     Read the parameters in the configuration file
@@ -37,16 +71,6 @@ parser = ConfigParser()
 parser.read(config)
 
 
-"""
-    Read the arguments passed for program execution
-"""
-parserArg = argparse.ArgumentParser(description='write tracked frame to csv')
-parserArg.add_argument('--file_name', type=str, help='name of the file')
-parserArg.add_argument('--background', type=str, help='specify the path of back')
-parserArg.add_argument('--capture', type=int, help='set the camera stream vide0 as default')
-parserArg.add_argument('--fps', type=int, help='set frames per second for processing')
-parserArg.add_argument('--mode', type=str, help='set the execution mode')
-args = parserArg.parse_args()
 
 """
     Set the arguments passed or set to defaults
@@ -67,6 +91,9 @@ else:
     print("Background size:" + str(bg.shape) + " Loaded from: " + backgrounds + '/bg_' + str(hostname) + '.png')
 
 # set fps control
+"""
+    not operational
+"""
 if args.fps is not None:
     fps = args.fps
     fps /= 1000
@@ -83,14 +110,31 @@ else:
     mode = 'experiment'
     print("Selected mode is: " + str(mode))
 
+# set resize
+if args.width and args.height is not None:
+    resize = True
+    width = args.width
+    height = args.height
+else:
+    resize = False
+
 # set the capture device
-stream = PiGear(resolution=(640, 480), framerate=60, colorspace='COLOR_BGR2GRAY').start()
-test_frame = stream.read()
+if args.nopi is not None:
+    stream = cv2.VideoCapture(int(args.nopi))
+    ret, test_frame = stream.read()
+else:
+    stream = PiGear(resolution=(640, 480), framerate=60, colorspace='COLOR_BGR2GRAY').start()
+    test_frame = stream.read()
+
 print("Foreground size: " + str(test_frame.shape))
 # start the empty canvas
 canvas = np.zeros((test_frame.shape[0], test_frame.shape[1]))
-# downsize background
-bg = cv2.resize(bg, (120, 120), interpolation = cv2.INTER_AREA)
+# set background
+if resize is True:
+    bg = cv2.resize(bg, (width, height), interpolation = cv2.INTER_AREA)
+else:
+    bg = bg
+    
 
 """
     Program main loop
@@ -126,26 +170,43 @@ if mode == 'experiment':
         start_time = time.time()
         ###                ###
 
-        for i in range(20):
+        while True:
 
             # read a single frame
-            frame = stream.read()
-            frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
+            if resize is True:
+                if args.nopi is not None:
+                    ret, frame = cv2.resize(stream.read(), (width, height), interpolation = cv2.INTER_LINEAR)
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                else:
+                    frame = cv2.resize(stream.read(), (width, height), interpolation = cv2.INTER_LINEAR)
+            else:
+                if args.nopi is not None:
+                    ret, frame = stream.read()
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                else:
+                    frame = stream.read()
 
             ### IMAGE PROCESSING ###
-            start_time1 = time.time()
             frame_filter = preprocess_image(frame, d, sigma1, sigma2)
-            start_time2 = time.time()
-            frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
-            start_time3 = time.time()
-            contours, nc = contour_extraction(frame_diff, canvas)
-            start_time4 = time.time()
+            frame_diff = bgfg_diff(bg, frame_filter)
+            contours, area, n_contours = contour_extraction(frame_diff)
             frame_post = postprocess_image(contours, kx, ky)
             time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
             ### IMAGE PROCESSING END ###
 
             ### POINTS EXTRACTION ###
-            if nc != 0:
+            if resize is True:
+                area_ratio = area / (width * height)
+            else:
+                area_ratio = area / (frame.shape[0] * frame.shape[1])
+            """
+                Will only calculate points if:
+                The number of contours detected is not 0 and
+                The ratio of the largest contour is not greater than
+                10% of whole image area
+                Otherwise will write 'NA' and drop the frame from further processing
+            """
+            if n_contours != 0 and area_ratio < 0.1:
                 M = cv2.moments(frame_post)
                 centroidX = int(M['m10'] / M['m00'])
                 centroidY = int(M['m01'] / M['m00'])
@@ -178,29 +239,60 @@ if mode == 'experiment':
         ###           ###
 
     ### STOP ###
-    stream.stop()
+    if args.nopi is not None:
+        stream.release()
+    else:
+        stream.stop()
 
 elif mode == 'preview':
     print("PREVIEW MODE")
-    for i in range(100):
+    # drop_frame is used in the drawing section
+    drop_frame = False
+    for i in range(1000):
+            
+        ### EXEC TIME CALC ### 
+        start_time = time.time()
+        ###                ###
 
         # read a single frame
-        frame = stream.read()
-        frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
+        if resize is True:
+            if args.nopi is not None:
+                ret, frame = cv2.resize(stream.read(), (width, height), interpolation = cv2.INTER_LINEAR)
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            else:
+                frame = cv2.resize(stream.read(), (width, height), interpolation = cv2.INTER_LINEAR)
+        else:
+            if args.nopi is not None:
+                ret, frame = stream.read()
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            else:
+                frame = stream.read()
+
 
         ### IMAGE PROCESSING ###
-        start_time1 = time.time()
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
-        start_time2 = time.time()
-        frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
-        start_time3 = time.time()
-        contours, nc = contour_extraction(frame_diff, canvas)
-        start_time4 = time.time()
+        frame_diff = bgfg_diff(bg, frame_filter)
+        contours, area, n_contours = contour_extraction(frame_diff)
         frame_post = postprocess_image(contours, kx, ky)
+        time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
+        ang = get_orientation(frame_post, frame)
         ### IMAGE PROCESSING END ###
 
         ### POINTS EXTRACTION ###
-        if nc != 0:
+        if resize is True:
+            area_ratio = area / (width * height)
+            print(area_ratio)
+        else:
+            area_ratio = area / (frame.shape[0] * frame.shape[1])
+            print(area_ratio)
+        """
+            Will only calculate points if:
+            The number of contours detected is not 0 and
+            The ratio of the largest contour is not greater than
+            10% of whole image area
+            Otherwise will write 'NA' and drop the frame from further processing
+        """
+        if n_contours != 0 and area_ratio < 0.1:
             M = cv2.moments(frame_post)
             centroidX = int(M['m10'] / M['m00'])
             centroidY = int(M['m01'] / M['m00'])
@@ -208,8 +300,7 @@ elif mode == 'preview':
             tailY = 0
             headX = 0
             headY = 0
-            img_jpg = cv2.circle(frame_post, (centroidX, centroidY), radius=8, color=(0, 0, 255), thickness=-1)
-            cv2.imwrite('/home/pi/nbolab_track/stream/pic{:>05}.jpg'.format(i), img_jpg) 
+            drop_frame = False
         else:
             centroidX = 'NA'
             centroidY = 'NA'
@@ -217,29 +308,64 @@ elif mode == 'preview':
             tailY = 'NA'
             headX = 'NA'
             headY = 'NA'
+            drop_frame = True
         ### POINTS EXTRACTION END ###
+        print("contour number: " + str(n_contours))
+
+        ### DRAWINGS ###
+        if drop_frame is False:
+            img_jpg = cv2.circle(frame,
+                    (centroidX, centroidY),
+                    radius=3,
+                    color=0,
+                    thickness=-1)
+            #cv2.imwrite(stream_folder + '/pic{:>05}.jpg'.format(i), img_jpg) 
+        else:
+            print("Dropped frame")
+
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        ### DRAWINGS END ###
+
+        ### EXEC TIME CALC ###
+        print("--- %s Total seconds ---" % (time.time() - start_time))
+        ###           ###
 
 elif mode == 'offline':
     print("OFFLINE MODE")
+    bg = cv2.imread('/home/nicoluarte/Downloads/background.jpeg', cv2.IMREAD_GRAYSCALE)
     img = glob.glob('/home/nicoluarte/Downloads/mice_test/Annotated/redlight/rat_01_seq_01_redlight/Frames_2017_10_16_14_01_55/*.png')
-    for i in range(100):
+    for i in range(1000):
+        start_time = time.time()
         # read a single frame
-        frame = cv2.imread(img[i])
-        frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
+        frame = cv2.imread(img[i], cv2.IMREAD_GRAYSCALE)
+        color = cv2.imread(img[i])
+        #frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
 
         ### IMAGE PROCESSING ###
-        start_time1 = time.time()
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
-        start_time2 = time.time()
-        frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
-        start_time3 = time.time()
-        contours, nc = contour_extraction(frame_diff, canvas)
-        start_time4 = time.time()
+        frame_diff = bgfg_diff(bg, frame_filter)
+        contours, area, n_contours, img_rect = contour_extraction(frame_diff)
         frame_post = postprocess_image(contours, kx, ky)
+        time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         ### IMAGE PROCESSING END ###
 
         ### POINTS EXTRACTION ###
-        if nc != 0:
+        if resize is True:
+            area_ratio = area / (width * height)
+            print(area_ratio)
+        else:
+            area_ratio = area / (frame.shape[0] * frame.shape[1])
+            print(area_ratio)
+        """
+            Will only calculate points if:
+            The number of contours detected is not 0 and
+            The ratio of the largest contour is not greater than
+            10% of whole image area
+            Otherwise will write 'NA' and drop the frame from further processing
+        """
+        if n_contours != 0 and area_ratio < 0.1:
             M = cv2.moments(frame_post)
             centroidX = int(M['m10'] / M['m00'])
             centroidY = int(M['m01'] / M['m00'])
@@ -247,11 +373,7 @@ elif mode == 'offline':
             tailY = 0
             headX = 0
             headY = 0
-            img_jpg = cv2.circle(frame_post, (centroidX, centroidY), radius=8, color=(0, 0, 255), thickness=-1)
-            cv2.imshow('frame', img_jpg)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
+            drop_frame = False
         else:
             centroidX = 'NA'
             centroidY = 'NA'
@@ -259,5 +381,29 @@ elif mode == 'offline':
             tailY = 'NA'
             headX = 'NA'
             headY = 'NA'
+            drop_frame = True
         ### POINTS EXTRACTION END ###
+        print("contour number: " + str(n_contours))
+
+        ### DRAWINGS ###
+        if drop_frame is False:
+            img_jpg = cv2.circle(img_rect,
+                    (centroidX, centroidY),
+                    radius=3,
+                    color=0,
+                    thickness=-1)
+            #cv2.imwrite(stream_folder + '/pic{:>05}.jpg'.format(i), img_jpg) 
+        else:
+            print("Dropped frame")
+
+        if area_ratio < 0.1:
+            cv2.imshow('frame', img_rect)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        ### DRAWINGS END ###
+
+        ### EXEC TIME CALC ###
+        print("--- %s Total seconds ---" % (time.time() - start_time))
+        ###           ###
+
 
