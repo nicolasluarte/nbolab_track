@@ -126,7 +126,7 @@ if mode == 'experiment':
         start_time = time.time()
         ###                ###
 
-        for i in range(30):
+        for i in range(20):
 
             # read a single frame
             frame = stream.read()
@@ -173,3 +173,10 @@ if mode == 'experiment':
 
     ### STOP ###
     stream.stop()
+
+elif mode == 'preview':
+    print("PREVIEW MODE")
+
+elif mode == 'offline':
+    print("OFFLINE MODE")
+
