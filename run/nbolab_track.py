@@ -117,11 +117,6 @@ with open(csv_files + label + '.csv', 'w') as f:
 
     for i in range(30):
 
-        ### FPS CONTROL ### 
-        start = time.time()
-        ### FPS CONTROL END ###
-
-
         # read a single frame
         frame = stream.read()
         frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
@@ -160,12 +155,6 @@ with open(csv_files + label + '.csv', 'w') as f:
                     headY]
             writer.writerow(log)
         ### PARSING DATA END ###
-
-        ### FPS CONTROL ###
-        control = time.time() - start
-        while diff < fps:
-             control = time.time() - start
-        ### FPS CONTROL END ###
 
     ### EXEC TIME CALC ###
     print("--- %s Total seconds ---" % (time.time() - start_time))
