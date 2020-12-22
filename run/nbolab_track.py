@@ -78,10 +78,10 @@ else:
 # set the execution mode
 if args.mode is not None:
     mode = args.mode
-    print("Selected mode is" + str(mode))
+    print("Selected mode is: " + str(mode))
 else:
     mode = 'experiment'
-    print("Selected mode is" + str(mode))
+    print("Selected mode is: " + str(mode))
 
 # set the capture device
 stream = PiGear(resolution=(640, 480), framerate=60, colorspace='COLOR_BGR2GRAY').start()
@@ -153,18 +153,24 @@ if mode == 'experiment':
                 tailY = 0
                 headX = 0
                 headY = 0
+            else:
+                centroidX = 'NA'
+                centroidY = 'NA'
+                tailX = 'NA'
+                tailY = 'NA'
+                headX = 'NA'
+                headY = 'NA'
             ### POINTS EXTRACTION END ###
 
 
             ### PARSING DATA ###
-            if nc != 0:
-                log = list(map(int, time_stamp.split())) + [centroidX,
-                        centroidY,
-                        tailX,
-                        tailY,
-                        headX,
-                        headY]
-                writer.writerow(log)
+            log = list(map(int, time_stamp.split())) + [centroidX,
+                    centroidY,
+                    tailX,
+                    tailY,
+                    headX,
+                    headY]
+            writer.writerow(log)
             ### PARSING DATA END ###
 
         ### EXEC TIME CALC ###
