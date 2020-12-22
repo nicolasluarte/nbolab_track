@@ -182,6 +182,48 @@ if mode == 'experiment':
 
 elif mode == 'preview':
     print("PREVIEW MODE")
+    for i in range(20):
+
+        # read a single frame
+        frame = stream.read()
+        frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
+
+        ### IMAGE PROCESSING ###
+        start_time1 = time.time()
+        frame_filter = preprocess_image(frame, d, sigma1, sigma2)
+        start_time2 = time.time()
+        frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
+        start_time3 = time.time()
+        contours, nc = contour_extraction(frame_diff, canvas)
+        start_time4 = time.time()
+        frame_post = postprocess_image(contours, kx, ky)
+        ### IMAGE PROCESSING END ###
+
+        ### POINTS EXTRACTION ###
+        if nc != 0:
+            M = cv2.moments(frame_post)
+            centroidX = int(M['m10'] / M['m00'])
+            centroidY = int(M['m01'] / M['m00'])
+            tailX = 0
+            tailY = 0
+            headX = 0
+            headY = 0
+        else:
+            centroidX = 'NA'
+            centroidY = 'NA'
+            tailX = 'NA'
+            tailY = 'NA'
+            headX = 'NA'
+            headY = 'NA'
+        ### POINTS EXTRACTION END ###
+        img_jpg = cv2.circle(frame_post, (bx, by), radius=8, color=(0, 0, 255), thickness=-1)
+        #img_jpg = cv2.circle(frame, points[1], radius=8, color=(0, 0, 255), thickness=-1)
+        #img_jpg = cv2.circle(frame, points[2], radius=8, color=(0, 0, 255), thickness=-1)
+        #cv2.putText(img_jpg, str(diff), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (209, 80, 0, 255), 3)
+        cv2.imshow('frame', img_jpg)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        #cv2.imwrite('/home/pi/uni/PHD/tracking_device/stream/stream.jpg', img_jpg) 
 
 elif mode == 'offline':
     print("OFFLINE MODE")
