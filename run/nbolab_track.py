@@ -80,7 +80,7 @@ print("Foreground size: " + str(test_frame.shape))
 # start the empty canvas
 canvas = np.zeros((test_frame.shape[0], test_frame.shape[1]))
 # downsize background
-bg = cv2.resize(bg, (120, 120), interpolation = cv2.INTER_AREA)
+bg = cv2.resize(bg, (96, 96), interpolation = cv2.INTER_AREA)
 
 """
     Program main loop
@@ -122,7 +122,7 @@ with open(csv_files + label + '.csv', 'w') as f:
 
         # read a single frame
         frame = stream.read()
-        frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_AREA)
+        frame = cv2.resize(frame, (96, 96), interpolation = cv2.INTER_AREA)
         print("--- %s resize seconds ---" % (time.time() - start_time))
 
         ### IMAGE PROCESSING ###
