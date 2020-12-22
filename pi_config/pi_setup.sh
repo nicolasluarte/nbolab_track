@@ -10,7 +10,7 @@ HOSTNAME=($(awk -F ',' '{print $2}' ipfile))
 # variables for running previews
 MAIN='nbolab_track.py/run/nbolab_track.py'
 BG='uni/PHD/tracking_device/run/take_bg.py'
-STREAM='nbolab_track.py/stream'
+STREAM='nbolab_track/stream'
 
 if [[ "$1" == "full" ]] || [[ "$1" == "all" ]]
 then
