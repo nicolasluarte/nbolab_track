@@ -110,35 +110,30 @@ with open(csv_files + label + '.csv', 'w') as f:
     writer.writerow(["YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "MICROSECOND", "centroid_x", "centroid_y", "tail_x", "tail_y", "head_x", "head_y"])
     ### CSV HEADERS END ###
 
-    while(True):
+### EXEC TIME CALC ### 
+start_time = time.time()
+###                ###
+
+    for i in range(30):
 
         ### FPS CONTROL ### 
         # start = timer()
         ### FPS CONTROL END ###
 
-        ### EXEC TIME CALC ### 
-        start_time = time.time()
-        ###                ###
 
         # read a single frame
         frame = stream.read()
         frame = cv2.resize(frame, (96, 96), interpolation = cv2.INTER_AREA)
-        print("--- %s resize seconds ---" % (time.time() - start_time))
 
         ### IMAGE PROCESSING ###
         start_time1 = time.time()
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
-        print("--- %s filter seconds ---" % (time.time() - start_time1))
         start_time2 = time.time()
         frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
-        print("--- %s diff seconds ---" % (time.time() - start_time2))
         start_time3 = time.time()
         contours, nc = contour_extraction(frame_diff, canvas)
-        print("--- %s contours seconds ---" % (time.time() - start_time3))
-        print("Contours: " + str(nc))
         start_time4 = time.time()
         frame_post = postprocess_image(contours, kx, ky)
-        print("--- %s post seconds ---" % (time.time() - start_time4))
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         ### IMAGE PROCESSING END ###
 
@@ -153,9 +148,6 @@ with open(csv_files + label + '.csv', 'w') as f:
             headY = 0
         ### POINTS EXTRACTION END ###
 
-        ### EXEC TIME CALC ###
-        print("--- %s Total seconds ---" % (time.time() - start_time))
-        ###           ###
 
         ### PARSING DATA ###
         if nc != 0:
@@ -173,6 +165,10 @@ with open(csv_files + label + '.csv', 'w') as f:
         # while diff < fps:
         #     diff = timer() - start
         ### FPS CONTROL END ###
+
+### EXEC TIME CALC ###
+print("--- %s Total seconds ---" % (time.time() - start_time))
+###           ###
 
 ### STOP ###
 stream.stop()
