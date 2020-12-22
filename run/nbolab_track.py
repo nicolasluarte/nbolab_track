@@ -208,6 +208,8 @@ elif mode == 'preview':
             tailY = 0
             headX = 0
             headY = 0
+            img_jpg = cv2.circle(frame_post, (centroidX, centroidY), radius=8, color=(0, 0, 255), thickness=-1)
+            cv2.imwrite('/home/pi/nbolab_track/stream/pic{:>05}.jpg'.format(i), img_jpg) 
         else:
             centroidX = 'NA'
             centroidY = 'NA'
@@ -216,14 +218,6 @@ elif mode == 'preview':
             headX = 'NA'
             headY = 'NA'
         ### POINTS EXTRACTION END ###
-        img_jpg = cv2.circle(frame_post, (centroidX, centroidY), radius=8, color=(0, 0, 255), thickness=-1)
-        #img_jpg = cv2.circle(frame, points[1], radius=8, color=(0, 0, 255), thickness=-1)
-        #img_jpg = cv2.circle(frame, points[2], radius=8, color=(0, 0, 255), thickness=-1)
-        #cv2.putText(img_jpg, str(diff), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (209, 80, 0, 255), 3)
-        #cv2.imshow('frame', img_jpg)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-        cv2.imwrite('/home/pi/nbolab_track/stream/pic{:>05}.jpg'.format(i), img_jpg) 
 
 elif mode == 'offline':
     print("OFFLINE MODE")
