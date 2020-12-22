@@ -74,7 +74,7 @@ else:
     fps = 30
 
 # set the capture device
-stream = PiGear(resolution=(640, 480), framerate=30, colorspace='COLOR_BGR2GRAY').start()
+stream = PiGear(resolution=(640, 480), framerate=60, colorspace='COLOR_BGR2GRAY').start()
 test_frame = stream.read()
 print("Foreground size: " + str(test_frame.shape))
 # start the empty canvas
@@ -172,5 +172,3 @@ with open(csv_files + label + '.csv', 'w') as f:
 
 ### STOP ###
 stream.stop()
-cap.release()
-cv2.destroyAllWindows()
