@@ -19,34 +19,34 @@ def postprocess_image(image, kx, ky):
    open_image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
    return open_image
 
-def contour_extraction(image, canvas):
+def contour_extraction(image):
     """
         Selects the contour with the largest area
         This prevents to perform calculation in other objects
 
-        1. Creates a binary image
+        1. Input is binary image
         2. Gets the contours
         3. Creates a black to draw the contour
         4. Extracts the contour with the larges area and puts it into the canvas
     """
-    _, thresholded = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
-    contours, hierarchy = cv2.findContours(thresholded, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-
+    canvas = np.zeros((image.shape[0], image.shape[1]))
+    contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     if len(contours) != 0:
-        cnt = [max(contours, key = cv2.contourArea)]
-        extraction = cv2.drawContours(canvas, cnt, -1, 255, thickness=-1)
+        cnt = max(contours, key = cv2.contourArea)
+        extraction = cv2.drawContours(canvas, [cnt], -1, 255, thickness=-1)
     else:
-        extraction = thresholded
+        extraction = canvas
 
     return extraction, len(contours)
 
-def bgfg_diff(background, foreground, d, sigma1, sigma2):
+def bgfg_diff(background, foreground):
     """
         Simple function to substract the rat from the background
         NOTE: it assumes both images are in grayscale
     """
     diff = cv2.absdiff(background, foreground)
-    return diff
+    _, thresholded = cv2.threshold(diff, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    return thresholded
 
 """ this function does all the pipeline """
 def image_full_process(background, foreground, d, sigma1, sigma2, kx, ky):

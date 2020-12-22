@@ -221,4 +221,43 @@ elif mode == 'preview':
 
 elif mode == 'offline':
     print("OFFLINE MODE")
+    img = glob.glob('/home/nicoluarte/Downloads/mice_test/Annotated/redlight/rat_01_seq_01_redlight/Frames_2017_10_16_14_01_55/*.png')
+    for i in range(100):
+        # read a single frame
+        frame = cv2.imread(img[i])
+        frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
+
+        ### IMAGE PROCESSING ###
+        start_time1 = time.time()
+        frame_filter = preprocess_image(frame, d, sigma1, sigma2)
+        start_time2 = time.time()
+        frame_diff = bgfg_diff(bg, frame_filter, d, sigma1, sigma2)
+        start_time3 = time.time()
+        contours, nc = contour_extraction(frame_diff, canvas)
+        start_time4 = time.time()
+        frame_post = postprocess_image(contours, kx, ky)
+        ### IMAGE PROCESSING END ###
+
+        ### POINTS EXTRACTION ###
+        if nc != 0:
+            M = cv2.moments(frame_post)
+            centroidX = int(M['m10'] / M['m00'])
+            centroidY = int(M['m01'] / M['m00'])
+            tailX = 0
+            tailY = 0
+            headX = 0
+            headY = 0
+            img_jpg = cv2.circle(frame_post, (centroidX, centroidY), radius=8, color=(0, 0, 255), thickness=-1)
+            cv2.imshow('frame', img_jpg)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        else:
+            centroidX = 'NA'
+            centroidY = 'NA'
+            tailX = 'NA'
+            tailY = 'NA'
+            headX = 'NA'
+            headY = 'NA'
+        ### POINTS EXTRACTION END ###
 
