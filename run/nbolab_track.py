@@ -216,7 +216,7 @@ elif mode == 'preview':
             headX = 'NA'
             headY = 'NA'
         ### POINTS EXTRACTION END ###
-        img_jpg = cv2.circle(frame_post, (bx, by), radius=8, color=(0, 0, 255), thickness=-1)
+        img_jpg = cv2.circle(frame_post, (centroidX, centroidY), radius=8, color=(0, 0, 255), thickness=-1)
         #img_jpg = cv2.circle(frame, points[1], radius=8, color=(0, 0, 255), thickness=-1)
         #img_jpg = cv2.circle(frame, points[2], radius=8, color=(0, 0, 255), thickness=-1)
         #cv2.putText(img_jpg, str(diff), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (209, 80, 0, 255), 3)
