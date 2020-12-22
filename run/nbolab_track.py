@@ -71,7 +71,8 @@ if args.fps is not None:
     fps /= 1000
     print("user defined FPS: " + str(args.fps))
 else:
-    fps = 30
+    fps = 20
+    fps /= 1000
 
 # set the capture device
 stream = PiGear(resolution=(640, 480), framerate=60, colorspace='COLOR_BGR2GRAY').start()
@@ -117,7 +118,7 @@ with open(csv_files + label + '.csv', 'w') as f:
     for i in range(30):
 
         ### FPS CONTROL ### 
-        # start = timer()
+        start = time.time()
         ### FPS CONTROL END ###
 
 
@@ -161,9 +162,9 @@ with open(csv_files + label + '.csv', 'w') as f:
         ### PARSING DATA END ###
 
         ### FPS CONTROL ###
-        # diff = timer() - start
-        # while diff < fps:
-        #     diff = timer() - start
+        control = time.time() - start
+        while diff < fps:
+             control = time.time() - start
         ### FPS CONTROL END ###
 
     ### EXEC TIME CALC ###
