@@ -34,9 +34,7 @@ def contour_extraction(image, tail_image, width, height):
     canvas = np.zeros((image.shape[0], image.shape[1]))
     contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     tail_contour, _ = cv2.findContours(tail_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    area = cv2.contourArea(cnt) / (width * height)
-    if len(contours) != 0 and area < 0.1:
-        area = cv2.contourArea(cnt)
+    if len(contours) != 0:
         cnt = max(contours, key = cv2.contourArea)
         cnt_tail = max(tail_contour, key = cv2.contourArea)
         extraction_tail = cv2.drawContours(canvas, [cnt_tail], -1, 255, thickness=-1)
@@ -62,7 +60,13 @@ def contour_extraction(image, tail_image, width, height):
     else:
         extraction = canvas
 
-    return extraction, centroidX, centroidY, area, head, intersection
+    area = cv2.contourArea(cnt) / (width * height)
+    if len(contours) != 0 and area < 0.1:
+        err = False
+        return extraction, centroidX, centroidY, area, head, intersection, err
+    else:
+        err = True
+        return _, _, _, _, _, _, err
 
 def bgfg_diff(background, foreground):
     """
