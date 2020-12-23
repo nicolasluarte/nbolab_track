@@ -21,7 +21,7 @@ def postprocess_image(image, kx, ky):
    tophat_image = cv2.morphologyEx(image, cv2.MORPH_TOPHAT, kernel)
    return open_image, tophat_image
 
-def contour_extraction(image, tail_image):
+def contour_extraction(image, tail_image, width, height):
     """
         Selects the contour with the largest area
         This prevents to perform calculation in other objects
@@ -34,7 +34,9 @@ def contour_extraction(image, tail_image):
     canvas = np.zeros((image.shape[0], image.shape[1]))
     contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     tail_contour, _ = cv2.findContours(tail_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    if len(contours) != 0:
+    area = cv2.contourArea(cnt) / (width * height)
+    if len(contours) != 0 and area < 0.1:
+        area = cv2.contourArea(cnt)
         cnt = max(contours, key = cv2.contourArea)
         cnt_tail = max(tail_contour, key = cv2.contourArea)
         extraction_tail = cv2.drawContours(canvas, [cnt_tail], -1, 255, thickness=-1)
@@ -45,7 +47,6 @@ def contour_extraction(image, tail_image):
 
         intersection = [centroidXT, centroidYT]
         extraction = cv2.drawContours(canvas, [cnt], -1, 255, thickness=-1)
-        area = cv2.contourArea(cnt)
         M = cv2.moments(extraction)
         centroidX = int(M['m10'] / M['m00'])
         centroidY = int(M['m01'] / M['m00'])

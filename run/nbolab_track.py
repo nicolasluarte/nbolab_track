@@ -116,6 +116,8 @@ if args.width and args.height is not None:
     width = args.width
     height = args.height
 else:
+    width = 640
+    height = 480
     resize = False
 
 # set the capture device
@@ -347,7 +349,7 @@ elif mode == 'offline':
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
         frame_diff = bgfg_diff(bg, frame_filter)
         frame_post, tail_image = postprocess_image(frame_diff, kx, ky)
-        segmented, centroidX, centroidY, area, head, intersection = contour_extraction(frame_post, tail_image)
+        segmented, centroidX, centroidY, area, head, intersection = contour_extraction(frame_post, tail_image, width, height)
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         print(intersection)
         ### IMAGE PROCESSING END ###
