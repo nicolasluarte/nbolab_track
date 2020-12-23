@@ -346,60 +346,34 @@ elif mode == 'offline':
         ### IMAGE PROCESSING ###
         frame_filter = preprocess_image(frame, d, sigma1, sigma2)
         frame_diff = bgfg_diff(bg, frame_filter)
-        contours, area, n_contours, img_rect = contour_extraction(frame_diff)
-        frame_post = postprocess_image(contours, kx, ky)
+        frame_post, tail_image = postprocess_image(frame_diff, kx, ky)
+        segmented, centroidX, centroidY, area, head, intersection = contour_extraction(frame_post, tail_image)
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
+        print(intersection)
         ### IMAGE PROCESSING END ###
 
         ### POINTS EXTRACTION ###
-        if resize is True:
-            area_ratio = area / (width * height)
-            print(area_ratio)
-        else:
-            area_ratio = area / (frame.shape[0] * frame.shape[1])
-            print(area_ratio)
-        """
-            Will only calculate points if:
-            The number of contours detected is not 0 and
-            The ratio of the largest contour is not greater than
-            10% of whole image area
-            Otherwise will write 'NA' and drop the frame from further processing
-        """
-        if n_contours != 0 and area_ratio < 0.1:
-            M = cv2.moments(frame_post)
-            centroidX = int(M['m10'] / M['m00'])
-            centroidY = int(M['m01'] / M['m00'])
-            tailX = 0
-            tailY = 0
-            headX = 0
-            headY = 0
-            drop_frame = False
-        else:
-            centroidX = 'NA'
-            centroidY = 'NA'
-            tailX = 'NA'
-            tailY = 'NA'
-            headX = 'NA'
-            headY = 'NA'
-            drop_frame = True
         ### POINTS EXTRACTION END ###
-        print("contour number: " + str(n_contours))
 
         ### DRAWINGS ###
-        if drop_frame is False:
-            img_jpg = cv2.circle(img_rect,
-                    (centroidX, centroidY),
-                    radius=3,
-                    color=0,
-                    thickness=-1)
-            #cv2.imwrite(stream_folder + '/pic{:>05}.jpg'.format(i), img_jpg) 
-        else:
-            print("Dropped frame")
-
-        if area_ratio < 0.1:
-            cv2.imshow('frame', img_rect)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+        cv2.circle(color,
+                (intersection[0], intersection[1]),
+                radius=3,
+                color=(255,0,0),
+                thickness=-1)
+        cv2.circle(color,
+                head,
+                radius=3,
+                color=(0,255,0),
+                thickness=-1)
+        cv2.circle(color,
+                (centroidX, centroidY),
+                radius=3,
+                color=(0,0,255),
+                thickness=-1)
+        cv2.imshow('frame', color)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
         ### DRAWINGS END ###
 
         ### EXEC TIME CALC ###

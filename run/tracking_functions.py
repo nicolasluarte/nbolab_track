@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import skfmm
-from math import atan2, cos, sin, sqrt, pi
+from scipy.spatial.distance import cdist
 
 def preprocess_image(image, d, sigma1, sigma2):
     """
@@ -17,10 +17,11 @@ def postprocess_image(image, kx, ky):
         It help in removing noise and fillling the gaps within the rat
    """
    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(kx,ky))
-   open_image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
-   return open_image
+   open_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+   tophat_image = cv2.morphologyEx(image, cv2.MORPH_TOPHAT, kernel)
+   return open_image, tophat_image
 
-def contour_extraction(image):
+def contour_extraction(image, tail_image):
     """
         Selects the contour with the largest area
         This prevents to perform calculation in other objects
@@ -31,18 +32,36 @@ def contour_extraction(image):
         4. Extracts the contour with the larges area and puts it into the canvas
     """
     canvas = np.zeros((image.shape[0], image.shape[1]))
-    contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    tail_contour, _ = cv2.findContours(tail_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours) != 0:
         cnt = max(contours, key = cv2.contourArea)
+        cnt_tail = max(tail_contour, key = cv2.contourArea)
+        extraction_tail = cv2.drawContours(canvas, [cnt_tail], -1, 255, thickness=-1)
+        """ get the tail centroid """
+        MT = cv2.moments(extraction_tail)
+        centroidXT = int(MT['m10'] / MT['m00'])
+        centroidYT = int(MT['m01'] / MT['m00'])
+
+        intersection = [centroidXT, centroidYT]
         extraction = cv2.drawContours(canvas, [cnt], -1, 255, thickness=-1)
-        rect = cv2.minAreaRect(cnt)
-        box = cv2.boxPoints(rect)
-        box = np.int0(box)
-        img_rect = cv2.drawContours(image,[box],0,255,2)
+        area = cv2.contourArea(cnt)
+        M = cv2.moments(extraction)
+        centroidX = int(M['m10'] / M['m00'])
+        centroidY = int(M['m01'] / M['m00'])
+        hull = cv2.convexHull(cnt)
+        extLeft = tuple(hull[hull[:, :, 0].argmin()][0])
+        extRight = tuple(hull[hull[:, :, 0].argmax()][0])
+        extTop = tuple(hull[hull[:, :, 1].argmin()][0])
+        extBot = tuple(hull[hull[:, :, 1].argmax()][0])
+        points = [extLeft, extRight, extTop, extBot]
+        distant_points = cdist([(centroidXT, centroidYT)], points, 'euclidean')
+        idx = np.argmax(distant_points)
+        head = points[idx]
     else:
         extraction = canvas
 
-    return extraction, cv2.contourArea(cnt), len(contours), img_rect
+    return extraction, centroidX, centroidY, area, head, intersection
 
 def bgfg_diff(background, foreground):
     """
@@ -101,15 +120,28 @@ def body_tracking(image):
     points = [body_points, tail_points, head_points]
     return distance, tail_distance, head_distance, points
 
-def fast_track(image):
+def fast_track(image, contour):
     """
         This functions uses image moments to get the desired points
         Input image must be the processed one
     """
     # gets the centroid point
+    cnt = contour
     M = cv2.moments(image)
     centroidX = int(M['m10'] / M['m00'])
     centroidY = int(M['m01'] / M['m00'])
+    hull = cv2.convexHull(cnt)
+    extLeft = tuple(hull[hull[:, :, 0].argmin()][0])
+    extRight = tuple(hull[hull[:, :, 0].argmax()][0])
+    extTop = tuple(hull[hull[:, :, 1].argmin()][0])
+    extBot = tuple(hull[hull[:, :, 1].argmax()][0])
+    points = [extLeft, extRight, extTop, extBot]
+    distant_points = cdist((centroidX, centroidY), points, 'euclidean')
+    np.fill_diagonal(distant_points, -np.inf)
+    idx = np.unravel_index(np.argmin(distant_points, axis=None), distant_points.shape)
+    
+    return print(idx)
+
 
 def take_background(path, capture, d, sigma1, sigma2, height=480, width=640):
     """
