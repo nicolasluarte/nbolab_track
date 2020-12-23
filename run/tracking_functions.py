@@ -31,7 +31,18 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
         3. Creates a black to draw the contour
         4. Extracts the contour with the larges area and puts it into the canvas
     """
-
+    # variable preset
+    extraction = np.zeros((image.shape[0], image.shape[1]))
+    extraction_tail = np.zeros((image.shape[0], image.shape[1]))
+    centroidX = None
+    centroidY = None
+    centroidXT = None
+    centroidYT = None
+    centroidXH = None
+    centroidYH = None
+    area = None
+    head = None
+    err = None
     # first a canvas is created, here the contour will be drawn, so no noise is present
     canvas_body = np.zeros((image.shape[0], image.shape[1]))
     canvas_tail = np.zeros((image.shape[0], image.shape[1]))
@@ -41,7 +52,7 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
     tail_contour, _ = cv2.findContours(tail_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # if at least 1 contour is detected
     if len(contours) != 0:
-
+        print('No contours found!')
         # get the largest contour by area
         cnt = max(contours, key = cv2.contourArea)
         # the same but for the tail
@@ -53,7 +64,6 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
         area = cv2.contourArea(cnt) / (width * height)
         # if threshold area is lower that threshold perform further computation
         if area < threshold:
-
             # both contours are drawn to two separate canvas
             extraction = cv2.drawContours(canvas_body, [cnt], -1, 255, thickness=-1)
             extraction_tail = cv2.drawContours(canvas_tail, [cnt_tail], -1, 255, thickness=-1)
@@ -89,6 +99,7 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
             idx = np.argmax(distant_points)
             # we index the point in the hull corresponding with the head
             head = points[idx]
+            print('debug')
             centroidXH = head[0]
             centroidYH = head[1]
             # if computations are succesful err is false
@@ -115,7 +126,7 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
         centroidX = "None"
         centroidY = "None"
         centroidXT = "None"
-        centroidXT = "None"
+        centroidYT = "None"
         centroidXH = "None"
         centroidYH = "None"
         area = "None"
@@ -133,7 +144,6 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
         area: the contour area relative to the whole image
         err: True is some error happend, False if area and contour numbers are good
     """
-
     return extraction, extraction_tail, centroidX, centroidY, centroidXT, centroidYT, centroidXH, centroidYH, area, err
 
 

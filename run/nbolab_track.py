@@ -13,8 +13,8 @@ parserArg.add_argument('--background', type=str, help='specify the path of back'
 parserArg.add_argument('--capture', type=int, help='set the camera stream vide0 as default')
 parserArg.add_argument('--fps', type=int, help='set frames per second for processing')
 parserArg.add_argument('--mode', type=str, help='set the execution mode')
-parserArg.add_argument('--width', type=str, help='resize for faster processing')
-parserArg.add_argument('--height', type=str, help='resize for faster processing')
+parserArg.add_argument('--width', type=int, help='resize for faster processing')
+parserArg.add_argument('--height', type=int, help='resize for faster processing')
 parserArg.add_argument('-np', '--nopi', type=str, help='activate normal usb-cam mode')
 args = parserArg.parse_args()
 
@@ -336,14 +336,16 @@ elif mode == 'preview':
 
 elif mode == 'offline':
     print("OFFLINE MODE")
-    bg = cv2.imread('/home/nicoluarte/Downloads/background.jpeg', cv2.IMREAD_GRAYSCALE)
-    img = glob.glob('/home/nicoluarte/Downloads/mice_test/Annotated/redlight/rat_01_seq_01_redlight/Frames_2017_10_16_14_01_55/*.png')
+    bg = cv2.imread('/home/pi/background.jpeg', cv2.IMREAD_GRAYSCALE)
+    bg = cv2.resize(bg, (width, height), interpolation = cv2.INTER_LINEAR)
+    img = glob.glob('/home/pi/rat/*.png')
     for i in range(10000):
         start_time = time.time()
         # read a single frame
         frame = cv2.imread(img[i], cv2.IMREAD_GRAYSCALE)
         color = cv2.imread(img[i])
-        #frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
+        frame = cv2.resize(frame, (width, height), interpolation = cv2.INTER_LINEAR)
+        color = cv2.resize(color, (width, height), interpolation = cv2.INTER_LINEAR)
 
         ### IMAGE PROCESSING ###
         #frame_filter = preprocess_image(frame, d, sigma1, sigma2)
@@ -358,28 +360,29 @@ elif mode == 'offline':
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         ### IMAGE PROCESSING END ###
 
-        ### POINTS EXTRACTION ###
-        ### POINTS EXTRACTION END ###
+        ### EXEC TIME CALC ###
+        print("--- %s Total seconds ---" % (time.time() - start_time))
+        ###           ###
 
         ### DRAWINGS ###
         if err is False:
             # draw body centroid
             cv2.circle(color,
                     (centroidX, centroidY),
-                    radius=3,
+                    radius=1,
                     color=(255,0,0),
                     thickness=-1)
             # draw tail centroid
             cv2.circle(color,
                     (centroidXT, centroidYT),
-                    radius=3,
+                    radius=1,
                     color=(0,255,0),
                     thickness=-1)
             cv2.imshow('frame', color)
             # draw head estimation
             cv2.circle(color,
                     (centroidXH, centroidYH),
-                    radius=3,
+                    radius=1,
                     color=(0,0,255),
                     thickness=-1)
             # draw the whole frame
@@ -388,8 +391,5 @@ elif mode == 'offline':
                 break
         ### DRAWINGS END ###
 
-        ### EXEC TIME CALC ###
-        print("--- %s Total seconds ---" % (time.time() - start_time))
-        ###           ###
 
 
