@@ -52,7 +52,6 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
     tail_contour, _ = cv2.findContours(tail_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # if at least 1 contour is detected
     if len(contours) != 0:
-        print('No contours found!')
         # get the largest contour by area
         cnt = max(contours, key = cv2.contourArea)
         # the same but for the tail
@@ -99,12 +98,12 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
             idx = np.argmax(distant_points)
             # we index the point in the hull corresponding with the head
             head = points[idx]
-            print('debug')
             centroidXH = head[0]
             centroidYH = head[1]
             # if computations are succesful err is false
             err = False
         else:
+            print('Area too large, points not computed')
             # otherwise false
             err = True
             extraction = canvas_body
@@ -119,6 +118,7 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
             head = "None"
 
     else:
+        print('No contours found, points not computed')
         # if no contour is detected an empty canvas is returned
         # all other values are returned as none
         extraction = canvas_body
