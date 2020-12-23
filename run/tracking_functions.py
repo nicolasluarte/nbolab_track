@@ -21,7 +21,7 @@ def postprocess_image(image, kx, ky):
    tophat_image = cv2.morphologyEx(image, cv2.MORPH_TOPHAT, kernel)
    return open_image, tophat_image
 
-def contour_extraction(image, tail_image, width, height):
+def contour_extraction(image, tail_image, width, height, threshold=0.1):
     """
         Selects the contour with the largest area
         This prevents to perform calculation in other objects
@@ -31,42 +31,111 @@ def contour_extraction(image, tail_image, width, height):
         3. Creates a black to draw the contour
         4. Extracts the contour with the larges area and puts it into the canvas
     """
-    canvas = np.zeros((image.shape[0], image.shape[1]))
+
+    # first a canvas is created, here the contour will be drawn, so no noise is present
+    canvas_body = np.zeros((image.shape[0], image.shape[1]))
+    canvas_tail = np.zeros((image.shape[0], image.shape[1]))
+    # contours of the main image are extracted
     contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # contours of the isolated tail are extracted
     tail_contour, _ = cv2.findContours(tail_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # if at least 1 contour is detected
     if len(contours) != 0:
+
+        # get the largest contour by area
         cnt = max(contours, key = cv2.contourArea)
+        # the same but for the tail
         cnt_tail = max(tail_contour, key = cv2.contourArea)
-        extraction_tail = cv2.drawContours(canvas, [cnt_tail], -1, 255, thickness=-1)
-        """ get the tail centroid """
-        MT = cv2.moments(extraction_tail)
-        centroidXT = int(MT['m10'] / MT['m00'])
-        centroidYT = int(MT['m01'] / MT['m00'])
+        # the area of the largest contour is computed
+        # if the area is largest than a percent threshold 
+        # its considered as a detection error
+        # 10% (0.1) is the default
+        area = cv2.contourArea(cnt) / (width * height)
+        # if threshold area is lower that threshold perform further computation
+        if area < threshold:
 
-        intersection = [centroidXT, centroidYT]
-        extraction = cv2.drawContours(canvas, [cnt], -1, 255, thickness=-1)
-        M = cv2.moments(extraction)
-        centroidX = int(M['m10'] / M['m00'])
-        centroidY = int(M['m01'] / M['m00'])
-        hull = cv2.convexHull(cnt)
-        extLeft = tuple(hull[hull[:, :, 0].argmin()][0])
-        extRight = tuple(hull[hull[:, :, 0].argmax()][0])
-        extTop = tuple(hull[hull[:, :, 1].argmin()][0])
-        extBot = tuple(hull[hull[:, :, 1].argmax()][0])
-        points = [extLeft, extRight, extTop, extBot]
-        distant_points = cdist([(centroidXT, centroidYT)], points, 'euclidean')
-        idx = np.argmax(distant_points)
-        head = points[idx]
-    else:
-        extraction = canvas
+            # both contours are drawn to two separate canvas
+            extraction = cv2.drawContours(canvas_body, [cnt], -1, 255, thickness=-1)
+            extraction_tail = cv2.drawContours(canvas_tail, [cnt_tail], -1, 255, thickness=-1)
 
-    area = cv2.contourArea(cnt) / (width * height)
-    if len(contours) != 0 and area < 0.1:
-        err = False
-        return extraction, centroidX, centroidY, area, head, intersection, err
+            # The centroid or center of mass is calculated from image moments
+            # This is donde for the center of mass of tail-less rat and
+            # for the isolated tail
+            M = cv2.moments(extraction)
+            MT = cv2.moments(extraction_tail)
+            centroidX = int(M['m10'] / M['m00'])
+            centroidY = int(M['m01'] / M['m00'])
+            centroidXT = int(MT['m10'] / MT['m00'])
+            centroidYT = int(MT['m01'] / MT['m00'])
+            
+            # For purposes of drawing we put both points as lists
+            # This makes it easier to plot
+            tail_centroid = [centroidXT, centroidYT]
+            body_centroid = [centroidX, centroidY]
+            
+            # We do gift wrapping upon the contour (hull)
+            hull = cv2.convexHull(cnt)
+            # we get all the extreme points in the hull
+            extLeft = tuple(hull[hull[:, :, 0].argmin()][0])
+            extRight = tuple(hull[hull[:, :, 0].argmax()][0])
+            extTop = tuple(hull[hull[:, :, 1].argmin()][0])
+            extBot = tuple(hull[hull[:, :, 1].argmax()][0])
+            # make a list of them
+            points = [extLeft, extRight, extTop, extBot]
+            # calculate the distance from the tail centroid to every point
+            # in the hull
+            distant_points = cdist([(centroidXT, centroidYT)], points, 'euclidean')
+            # The furthest apart point is the head 
+            idx = np.argmax(distant_points)
+            # we index the point in the hull corresponding with the head
+            head = points[idx]
+            centroidXH = head[0]
+            centroidYH = head[1]
+            # if computations are succesful err is false
+            err = False
+        else:
+            # otherwise false
+            err = True
+            extraction = canvas_body
+            extraction_tail = canvas_tail
+            centroidX = "None"
+            centroidY = "None"
+            centroidXT = "None"
+            centroidYT = "None"
+            centroidXH = "None"
+            centroidYH = "None"
+            area = "None"
+            head = "None"
+
     else:
-        err = True
-        return _, _, _, _, _, _, err
+        # if no contour is detected an empty canvas is returned
+        # all other values are returned as none
+        extraction = canvas_body
+        extraction_tail = canvas_tail
+        centroidX = "None"
+        centroidY = "None"
+        centroidXT = "None"
+        centroidXT = "None"
+        centroidXH = "None"
+        centroidYH = "None"
+        area = "None"
+        head = "None"
+
+    """
+        extraction: the drawn contour of the main rat image
+        extraction_tail: the drawn contour of the isolated tail
+        centroidX: x coordinate of the rat main image
+        centroidY: y coordinate of the rat main image
+        centroidXT: x coordinate of the isolated tail
+        centroidYT: y coordinate of the isolated tail 
+        centroidXH: x coordinate of the estimated head position 
+        centroidYH: y coordinate of the estimated head position 
+        area: the contour area relative to the whole image
+        err: True is some error happend, False if area and contour numbers are good
+    """
+
+    return extraction, extraction_tail, centroidX, centroidY, centroidXT, centroidYT, centroidXH, centroidYH, area, err
+
 
 def bgfg_diff(background, foreground):
     """
@@ -124,28 +193,6 @@ def body_tracking(image):
     head_points = (hy, hx)
     points = [body_points, tail_points, head_points]
     return distance, tail_distance, head_distance, points
-
-def fast_track(image, contour):
-    """
-        This functions uses image moments to get the desired points
-        Input image must be the processed one
-    """
-    # gets the centroid point
-    cnt = contour
-    M = cv2.moments(image)
-    centroidX = int(M['m10'] / M['m00'])
-    centroidY = int(M['m01'] / M['m00'])
-    hull = cv2.convexHull(cnt)
-    extLeft = tuple(hull[hull[:, :, 0].argmin()][0])
-    extRight = tuple(hull[hull[:, :, 0].argmax()][0])
-    extTop = tuple(hull[hull[:, :, 1].argmin()][0])
-    extBot = tuple(hull[hull[:, :, 1].argmax()][0])
-    points = [extLeft, extRight, extTop, extBot]
-    distant_points = cdist((centroidX, centroidY), points, 'euclidean')
-    np.fill_diagonal(distant_points, -np.inf)
-    idx = np.unravel_index(np.argmin(distant_points, axis=None), distant_points.shape)
-    
-    return print(idx)
 
 
 def take_background(path, capture, d, sigma1, sigma2, height=480, width=640):

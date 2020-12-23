@@ -338,7 +338,7 @@ elif mode == 'offline':
     print("OFFLINE MODE")
     bg = cv2.imread('/home/nicoluarte/Downloads/background.jpeg', cv2.IMREAD_GRAYSCALE)
     img = glob.glob('/home/nicoluarte/Downloads/mice_test/Annotated/redlight/rat_01_seq_01_redlight/Frames_2017_10_16_14_01_55/*.png')
-    for i in range(1000):
+    for i in range(10000):
         start_time = time.time()
         # read a single frame
         frame = cv2.imread(img[i], cv2.IMREAD_GRAYSCALE)
@@ -346,12 +346,16 @@ elif mode == 'offline':
         #frame = cv2.resize(frame, (120, 120), interpolation = cv2.INTER_LINEAR)
 
         ### IMAGE PROCESSING ###
-        frame_filter = preprocess_image(frame, d, sigma1, sigma2)
+        #frame_filter = preprocess_image(frame, d, sigma1, sigma2)
+        frame_filter = frame
         frame_diff = bgfg_diff(bg, frame_filter)
         frame_post, tail_image = postprocess_image(frame_diff, kx, ky)
-        segmented, centroidX, centroidY, area, head, intersection, err = contour_extraction(frame_post, tail_image, width, height)
+
+        # Contours extractions #
+        extraction_body, extraction_tail, centroidX, centroidY, centroidXT, centroidYT, centroidXH, centroidYH, area, err = contour_extraction(frame_post, tail_image, width, height)
+        ######################
+
         time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
-        print(intersection)
         ### IMAGE PROCESSING END ###
 
         ### POINTS EXTRACTION ###
@@ -359,21 +363,26 @@ elif mode == 'offline':
 
         ### DRAWINGS ###
         if err is False:
-            cv2.circle(color,
-                    (intersection[0], intersection[1]),
-                    radius=3,
-                    color=(255,0,0),
-                    thickness=-1)
-            cv2.circle(color,
-                    head,
-                    radius=3,
-                    color=(0,255,0),
-                    thickness=-1)
+            # draw body centroid
             cv2.circle(color,
                     (centroidX, centroidY),
                     radius=3,
+                    color=(255,0,0),
+                    thickness=-1)
+            # draw tail centroid
+            cv2.circle(color,
+                    (centroidXT, centroidYT),
+                    radius=3,
+                    color=(0,255,0),
+                    thickness=-1)
+            cv2.imshow('frame', color)
+            # draw head estimation
+            cv2.circle(color,
+                    (centroidXH, centroidYH),
+                    radius=3,
                     color=(0,0,255),
                     thickness=-1)
+            # draw the whole frame
             cv2.imshow('frame', color)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
