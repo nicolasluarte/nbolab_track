@@ -16,6 +16,7 @@ parserArg.add_argument('--mode', type=str, help='set the execution mode')
 parserArg.add_argument('--width', type=int, help='resize for faster processing')
 parserArg.add_argument('--height', type=int, help='resize for faster processing')
 parserArg.add_argument('-np', '--nopi', type=str, help='activate normal usb-cam mode')
+parserArg.add_argument('-f', '--folder', type=str, help='folder with png, if not only png use regex')
 args = parserArg.parse_args()
 
 if args.nopi is not None:
@@ -128,9 +129,24 @@ else:
     stream = PiGear(resolution=(640, 480), framerate=60, colorspace='COLOR_BGR2GRAY').start()
     test_frame = stream.read()
 
-print("Foreground size: " + str(test_frame.shape))
+# set the folder for offline mode
+img_files = glob.glob(args.folder)
+if args.mode != 'offline':
+    print("Foreground size: " + str(test_frame.shape))
+else:
+    test_frame = cv2.imread(img_files[0], cv2.IMREAD_GRAYSCALE)
+    print("Image size: " + str(test_frame.shape))
+    width = test_frame.shape[0]
+    height = test_frame.shape[1]
+    print("width: " + str(width))
+    print("height: " + str(height))
+
 # start the empty canvas
-canvas = np.zeros((test_frame.shape[0], test_frame.shape[1]))
+if args.mode != 'offline':
+    canvas = np.zeros((test_frame.shape[0], test_frame.shape[1]))
+else:
+    canvas = np.zeros((test_frame.shape[0], test_frame.shape[1]))
+
 # set background
 if resize is True:
     bg = cv2.resize(bg, (width, height), interpolation = cv2.INTER_AREA)
@@ -336,21 +352,18 @@ elif mode == 'preview':
 
 elif mode == 'offline':
     print("OFFLINE MODE")
-    bg = cv2.imread('/home/pi/background.jpeg', cv2.IMREAD_GRAYSCALE)
-    bg = cv2.resize(bg, (width, height), interpolation = cv2.INTER_LINEAR)
-    img = glob.glob('/home/pi/rat/*.png')
-    for i in range(10000):
+    for i in range(len(img_files)):
         start_time = time.time()
         # read a single frame
-        frame = cv2.imread(img[i], cv2.IMREAD_GRAYSCALE)
-        color = cv2.imread(img[i])
-        frame = cv2.resize(frame, (width, height), interpolation = cv2.INTER_LINEAR)
-        color = cv2.resize(color, (width, height), interpolation = cv2.INTER_LINEAR)
+        frame = cv2.imread(img_files[i], cv2.IMREAD_GRAYSCALE)
+        color = cv2.imread(img_files[i])
+        if resize is True:
+            frame = cv2.resize(frame, (width, height), interpolation = cv2.INTER_LINEAR)
+            color = cv2.resize(color, (width, height), interpolation = cv2.INTER_LINEAR)
+
 
         ### IMAGE PROCESSING ###
-        #frame_filter = preprocess_image(frame, d, sigma1, sigma2)
-        frame_filter = frame
-        frame_diff = bgfg_diff(bg, frame_filter)
+        frame_diff = bgfg_diff(bg, frame)
         frame_post, tail_image = postprocess_image(frame_diff, kx, ky)
 
         # Contours extractions #

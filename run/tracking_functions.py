@@ -61,8 +61,10 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
         # its considered as a detection error
         # 10% (0.1) is the default
         area = cv2.contourArea(cnt) / (width * height)
+        area_body = cv2.contourArea(cnt)
+        area_tail = cv2.contourArea(cnt_tail)
         # if threshold area is lower that threshold perform further computation
-        if area < threshold:
+        if area < threshold and area_body > area_tail:
             # both contours are drawn to two separate canvas
             extraction = cv2.drawContours(canvas_body, [cnt], -1, 255, thickness=-1)
             extraction_tail = cv2.drawContours(canvas_tail, [cnt_tail], -1, 255, thickness=-1)
