@@ -17,8 +17,10 @@ def postprocess_image(image, kx, ky):
         It help in removing noise and fillling the gaps within the rat
    """
    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(kx,ky))
+   tail_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(7,7))
    open_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
    tophat_image = cv2.morphologyEx(image, cv2.MORPH_TOPHAT, kernel)
+   tophat_image = cv2.morphologyEx(tophat_image, cv2.MORPH_DILATE, tail_kernel)
    return open_image, tophat_image
 
 def contour_extraction(image, tail_image, width, height, threshold=0.1):
@@ -50,6 +52,7 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
     contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # contours of the isolated tail are extracted
     tail_contour, _ = cv2.findContours(tail_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    
     # if at least 1 contour is detected
     if len(contours) != 0:
         # get the largest contour by area
@@ -68,6 +71,15 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
             # both contours are drawn to two separate canvas
             extraction = cv2.drawContours(canvas_body, [cnt], -1, 255, thickness=-1)
             extraction_tail = cv2.drawContours(canvas_tail, [cnt_tail], -1, 255, thickness=-1)
+            # intersection between tail and body contour gives the base of the tail
+            tail_base = cv2.bitwise_and(extraction, extraction_tail)
+            TB = cv2.moments(tail_base)
+            if TB['m00'] != 0:
+                centroidXB = int(TB['m10'] / TB['m00'])
+                centroidYB = int(TB['m01'] / TB['m00'])
+            else:
+                centroidXB = 0
+                centroidYB = 0
 
             # The centroid or center of mass is calculated from image moments
             # This is donde for the center of mass of tail-less rat and
@@ -95,7 +107,7 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
             points = [extLeft, extRight, extTop, extBot]
             # calculate the distance from the tail centroid to every point
             # in the hull
-            distant_points = cdist([(centroidXT, centroidYT)], points, 'euclidean')
+            distant_points = cdist([(centroidXB, centroidYB)], points, 'euclidean')
             # The furthest apart point is the head 
             idx = np.argmax(distant_points)
             # we index the point in the hull corresponding with the head
@@ -114,6 +126,8 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
             centroidY = "None"
             centroidXT = "None"
             centroidYT = "None"
+            centroidXB = "None"
+            centroidYB = "None"
             centroidXH = "None"
             centroidYH = "None"
             area = "None"
@@ -129,6 +143,8 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
         centroidY = "None"
         centroidXT = "None"
         centroidYT = "None"
+        centroidXB = "None"
+        centroidYB = "None"
         centroidXH = "None"
         centroidYH = "None"
         area = "None"
@@ -146,7 +162,7 @@ def contour_extraction(image, tail_image, width, height, threshold=0.1):
         area: the contour area relative to the whole image
         err: True is some error happend, False if area and contour numbers are good
     """
-    return extraction, extraction_tail, centroidX, centroidY, centroidXT, centroidYT, centroidXH, centroidYH, area, err
+    return extraction, extraction_tail, centroidX, centroidY, centroidXB, centroidYB, centroidXH, centroidYH, area, err
 
 
 def bgfg_diff(background, foreground):

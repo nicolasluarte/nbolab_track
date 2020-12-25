@@ -86,6 +86,7 @@ else:
 # set the background, uses the background folder as default
 if args.background is not None:
     bg = cv2.imread(args.background, cv2.IMREAD_GRAYSCALE)
+    print("User specified background")
     print("Background size:" + str(bg.shape))
 else:
     bg = cv2.imread(backgrounds + '/bg_' + str(hostname) + '.png', cv2.IMREAD_GRAYSCALE)
