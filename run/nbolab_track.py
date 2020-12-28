@@ -44,7 +44,6 @@ else:
     import datetime
     import time
     from vidgear.gears import PiGear
-
 """
     Paths definition
 
@@ -62,7 +61,7 @@ config = repo + '/config/config.conf'
 backgrounds = repo + '/background'
 hostname = os.popen('hostname').read().rstrip('\n')
 csv_files = repo + '/csv_bak'
-stream_folder = repo + '/stream'
+stream_folder = home + '/nfs' + '/' + str(os.uname()[1])
 
 """
     Read the parameters in the configuration file
@@ -70,8 +69,6 @@ stream_folder = repo + '/stream'
 """
 parser = ConfigParser()
 parser.read(config)
-
-
 
 """
     Set the arguments passed or set to defaults
@@ -392,7 +389,6 @@ elif mode == 'offline':
                     radius=1,
                     color=(0,255,0),
                     thickness=-1)
-            cv2.imshow('frame', color)
             # draw head estimation
             cv2.circle(color,
                     (centroidXH, centroidYH),
@@ -400,10 +396,5 @@ elif mode == 'offline':
                     color=(0,0,255),
                     thickness=-1)
             # draw the whole frame
-            cv2.imshow('frame', color)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+            cv2.imwrite(stream_folder + '/' + 'frame{:>05}.png'.format(i), color)
         ### DRAWINGS END ###
-
-
-
