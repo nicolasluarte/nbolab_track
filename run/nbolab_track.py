@@ -110,7 +110,7 @@ else:
     print("Selected mode is: " + str(mode))
 
 # set resize
-if args.width and args.height is not None:
+if args.width is not None and args.height is not None:
     resize = True
     width = args.width
     height = args.height
@@ -131,19 +131,16 @@ else:
 img_files = glob.glob(args.folder + '/*.png')
 if args.mode != 'offline':
     print("Foreground size: " + str(test_frame.shape))
-else:
+elif resize is False:
     test_frame = cv2.imread(img_files[0], cv2.IMREAD_GRAYSCALE)
     print("Image size: " + str(test_frame.shape))
     width = test_frame.shape[0]
     height = test_frame.shape[1]
     print("width: " + str(width))
     print("height: " + str(height))
-
-# start the empty canvas
-if args.mode != 'offline':
-    canvas = np.zeros((test_frame.shape[0], test_frame.shape[1]))
 else:
-    canvas = np.zeros((test_frame.shape[0], test_frame.shape[1]))
+    test_frame = cv2.imread(img_files[0], cv2.IMREAD_GRAYSCALE)
+
 
 # set background
 if resize is True:

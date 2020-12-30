@@ -12,10 +12,6 @@ MAIN='nbolab_track/run/nbolab_track.py'
 BG='uni/PHD/tracking_device/run/take_bg.py'
 STREAM='nbolab_track/stream'
 
-sudo apt update
-sudo apt install nfs-common
-sudo mkdir -p /nfs/$(hostname)
-sudo mount $HOST_IP:/home /nfs/$(hostname)
 
 if [[ "$1" == "full" ]] || [[ "$1" == "all" ]]
 then
