@@ -16,7 +16,7 @@ parserArg.add_argument('--mode', type=str, help='set the execution mode')
 parserArg.add_argument('--width', type=int, help='resize for faster processing')
 parserArg.add_argument('--height', type=int, help='resize for faster processing')
 parserArg.add_argument('-np', '--nopi', type=str, help='activate normal usb-cam mode')
-parserArg.add_argument('-f', '--folder', type=str, help='folder with png, if not only png use regex')
+parserArg.add_argument('-f', '--folder', type=str, help='folder where the png images are')
 args = parserArg.parse_args()
 
 if args.nopi is not None:
@@ -128,7 +128,7 @@ else:
     test_frame = stream.read()
 
 # set the folder for offline mode
-img_files = glob.glob(args.folder)
+img_files = glob.glob(args.folder + '/*.png')
 if args.mode != 'offline':
     print("Foreground size: " + str(test_frame.shape))
 else:
