@@ -58,11 +58,10 @@ else:
 home = str(Path.home())
 repo = home + '/nbolab_track'
 config = repo + '/config/config.conf'
-nfs = home + '/nfs' + '/' + str(os.uname()[1])
+backgrounds = repo + '/background'
 hostname = os.popen('hostname').read().rstrip('\n')
-csv_files = nfs + '/csv'
-stream_folder = nfs + '/preview'
-backgrounds = nfs + '/background'
+csv_files = repo + '/csv_bak'
+stream_folder = home + '/nfs' + '/' + str(os.uname()[1])
 
 """
     Read the parameters in the configuration file
@@ -80,6 +79,15 @@ if args.file_name is not None:
 else:
     label = '/' + str(socket.gethostname()) + "_" + \
         datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+
+# set the background, uses the background folder as default
+if args.background is not None:
+    bg = cv2.imread(args.background, cv2.IMREAD_GRAYSCALE)
+    print("User specified background")
+    print("Background size:" + str(bg.shape))
+else:
+    bg = cv2.imread(backgrounds + '/bg_' + str(hostname) + '.png', cv2.IMREAD_GRAYSCALE)
+    print("Background size:" + str(bg.shape) + " Loaded from: " + backgrounds + '/bg_' + str(hostname) + '.png')
 
 # set fps control
 """
@@ -126,9 +134,7 @@ else:
     test_frame = stream.read()
 
 # set the folder for offline mode
-if args.mode == 'offline':
-    img_files = glob.glob(args.folder + '/*.png')
-
+img_files = glob.glob(args.folder + '/*.png')
 if args.mode != 'offline':
     print("Foreground size: " + str(test_frame.shape))
 elif resize is False:
@@ -141,6 +147,13 @@ elif resize is False:
 else:
     test_frame = cv2.imread(img_files[0], cv2.IMREAD_GRAYSCALE)
 
+
+# set background
+if resize is True:
+    bg = cv2.resize(bg, (width, height), interpolation = cv2.INTER_AREA)
+else:
+    bg = bg
+    
 
 """
     Program main loop
@@ -163,33 +176,8 @@ print("Sigma2 size: " + str(sigma2))
 print("Kernel size: " + str((kx, ky)))
 ### PARAMETERS END ###
 
-# set the background, uses the background folder as default
-if args.background is not None:
-    bg = cv2.imread(args.background, cv2.IMREAD_GRAYSCALE)
-    print("User specified background")
-    print("Background size:" + str(bg.shape))
-else:
-    print("Taking background pic")
-    path = backgrounds + '/' + 'bg.png'
-    if args.nopi is not None:
-       ret, background_frame = stream.read()
-    else:
-       background_frame = stream.read()
-    cv2.imwrite(path, background_frame)
-    bg = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-    print("Loading background")
+if mode == 'experiment':
 
-if resize is True:
-    bg = cv2.resize(bg, (width, height), interpolation = cv2.INTER_AREA)
-else:
-    bg = bg
-
-
-if mode == 'null':
-    exit()
-
-elif mode == 'experiment':
-    print("Experiment mode selected")
     with open(csv_files + label + '.csv', 'w') as f:
 
         ### CSV HEADERS ###
@@ -280,17 +268,36 @@ elif mode == 'preview':
     while True:
 
         # read a single frame
-        if args.nopi is not None:
-            ret, frame = stream.read()
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        else:
-            frame = stream.read()
+        if resize is True:
+            if args.nopi is not None:
+                ret, frame = stream.read()
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            else:
+                frame = stream.read()
 
         if resize is True:
             frame = cv2.resize(frame, (width, height), interpolation = cv2.INTER_LINEAR)
             color = cv2.resize(frame, (width, height), interpolation = cv2.INTER_LINEAR)
+
         else:
-            color = frame
+            if args.nopi is not None:
+                ret, frame = stream.read()
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            else:
+                frame = stream.read()
+
+elif mode == 'Offline':
+    print("Offline mode selected")
+    # Read images from path
+    for i in range(len(img_files)):
+        start_time = time.time()
+        # read a single frame
+        frame = cv2.imread(img_files[i], cv2.IMREAD_GRAYSCALE)
+        color = cv2.imread(img_files[i])
+        # resize them if needed
+        if resize is True:
+            frame = cv2.resize(frame, (width, height), interpolation = cv2.INTER_LINEAR)
+            color = cv2.resize(color, (width, height), interpolation = cv2.INTER_LINEAR)
 
 
         ### IMAGE PROCESSING ###
@@ -332,76 +339,3 @@ elif mode == 'preview':
             # draw the whole frame
             cv2.imwrite(stream_folder + '/' + 'frame{:>05}.png'.format(i), color)
         ### DRAWINGS END ###
-
-
-elif mode == 'offline':
-    print("Offline mode selected")
-    with open(csv_files + label + '.csv', 'w') as f:
-
-        ### CSV HEADERS ###
-        writer = csv.writer(f)
-        writer.writerow([
-            "YEAR",
-            "MONTH",
-            "DAY",
-            "HOUR",
-            "MINUTE",
-            "SECOND",
-            "MICROSECOND",
-            "body_centroid_x",
-            "body_centroid_y",
-            "tail_centroid_x",
-            "tail_centroid_y",
-            "head_centroid_x",
-            "head_centroid_y",
-            "body_contour_area",
-            "error",
-            "execution_time",
-            "frame_width",
-            "frame_height"])
-        ### CSV HEADERS END ###
-
-        # Read images from path
-        for i in range(len(img_files)):
-            start_time = time.time()
-            # read a single frame
-            frame = cv2.imread(img_files[i], cv2.IMREAD_GRAYSCALE)
-            color = cv2.imread(img_files[i])
-            # resize them if needed
-            if resize is True:
-                frame = cv2.resize(frame, (width, height), interpolation = cv2.INTER_LINEAR)
-                color = cv2.resize(color, (width, height), interpolation = cv2.INTER_LINEAR)
-
-            ### IMAGE PROCESSING ###
-            # Add preprocessing if needed
-            # preprocess_image(...)
-            frame_diff = bgfg_diff(bg, frame)
-            frame_post, tail_image = postprocess_image(frame_diff, kx, ky)
-
-            # Contours extractions #
-            extraction_body, extraction_tail, centroidX, centroidY, centroidXT, centroidYT, centroidXH, centroidYH, area, err = contour_extraction(frame_post, tail_image, width, height)
-            ######################
-            time_stamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
-            ### IMAGE PROCESSING END ###
-
-            ### EXEC TIME CALC ###
-            exec_time = (time.time() - start_time)
-            ###           ###
-
-            ### PARSING DATA ###
-            log = list(map(int, time_stamp.split())) + \
-                    [
-                    centroidX,
-                    centroidY,
-                    centroidXT,
-                    centroidYT,
-                    centroidXH,
-                    centroidYH,
-                    area,
-                    err,
-                    exec_time,
-                    width,
-                    height
-                    ]
-            writer.writerow(log)
-            ### PARSING DATA END ###

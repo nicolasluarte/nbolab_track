@@ -234,7 +234,7 @@ def take_background(path, capture, d, sigma1, sigma2, height=480, width=640):
     cam.set(4, height)
     ret, frame = cam.read()
     gray_background = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    gray_filtered_image = cv2.bilateralFilter(gray_background, d, sigma1, sigma2)
+    #gray_filtered_image = cv2.bilateralFilter(gray_background, d, sigma1, sigma2)
     if ret:    # frame captured without any errors
         cv2.imwrite(path, gray_filtered_image) #save image
         cam.release()
