@@ -51,12 +51,6 @@ with open(csvPath, 'w') as f:
         "microsecond",
         "bodyCentroidX",
         "bodyCentroidY",
-        "tailCentroidX",
-        "tailCentroidY",
-        "headCentroidX",
-        "headCentroidY",
-        "bodyContourArea",
-        "error",
         "executionTime",
         "frameWidth",
         "frameHeight"
