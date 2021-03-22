@@ -45,6 +45,7 @@ stream = PiGear(resolution=(w, h), framerate=60,
 def videoP(g):
     # start reading from cam stream
     frame = stream.read()
+    pos = int(stream.stream.get(cv2.CAP_PROP_POS_FRAMES))
     # image processing
     frameDiff = bgfg_diff(bg, frame)  # background - foreground
     framePost = postprocess_image(
@@ -58,7 +59,7 @@ def videoP(g):
         centroidY = 0
     imgJpg = cv2.circle(framePost, (int(centroidX), int(centroidY)), radius=10,
                         color=(0, 0, 255), thickness=-1)
-    cv2.imwrite(previewPath + str(g) + '.jpg', imgJpg)
+    cv2.imwrite(previewPath + str(pos) + '.jpg', imgJpg)
     print(centroidX, centroidY, area, err)
 
 
