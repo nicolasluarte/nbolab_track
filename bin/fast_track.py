@@ -19,15 +19,11 @@ def postprocess_image(image, kx, ky):
          It help in removing noise and fillling the gaps within the rat
     """
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kx, ky))
-    tail_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
     open_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
-    tophat_image = cv2.morphologyEx(image, cv2.MORPH_TOPHAT, kernel)
-    tophat_image = cv2.morphologyEx(
-        tophat_image, cv2.MORPH_DILATE, tail_kernel)
-    return open_image, tophat_image
+    return open_image
 
 
-def contour_extraction(image, tail_image, width, height, threshold=0.1):
+def contour_extraction(image, width, height, threshold=0.1):
     """
         Selects the contour with the largest area
         This prevents to perform calculation in other objects

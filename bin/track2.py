@@ -67,11 +67,11 @@ with open(csvPath, 'w') as f:
         frame = stream.read()
         # image processing
         frameDiff = bgfg_diff(bg, frame)  # background - foreground
-        framePost, tailImage = postprocess_image(
+        framePost = postprocess_image(
             frameDiff, kx, ky)  # further processing
         # contour extraction
         centroidX, centroidY, area, err = contour_extraction(
-            framePost, tailImage, w, h)
+            framePost, w, h)
         # timing related stuff
         timeStamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         execTime = (time.time() - startTime)
