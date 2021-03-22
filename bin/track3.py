@@ -42,7 +42,7 @@ stream = PiGear(resolution=(w, h), framerate=60,
                 colorspace='COLOR_BGR2GRAY').start()
 
 
-def videoP(bg, frame, kx, ky, w, h):
+def videoP(bg, kx, ky, w, h):
     # start reading from cam stream
     frame = stream.read()
     # image processing
@@ -79,7 +79,7 @@ with open(csvPath, 'w') as f:
     while True:
         # timing related stuff
 
-        mp.Pool(4).map(videoP, range(4))
+        mp.Pool(4).map(videoP(bg, kx, ky, w, h), range(4))
 
         # data log
         # write preview images
