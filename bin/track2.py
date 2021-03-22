@@ -97,7 +97,7 @@ with open(csvPath, 'w') as f:
                             color=(0, 0, 255), thickness=-1)
         cv2.imwrite(previewPath + str(counter) + '.jpg', imgJpg)
         counter = counter + 1
-        print("execTime")
+        print(execTime)
 
 # stop stream
 stream.stop()
