@@ -17,7 +17,9 @@ backgroundPath = '/home/pi/nbolab_EXPERIMENTS/' + \
 # get folder to store csv file
 csvPath = '/home/pi/nbolab_EXPERIMENTS/' + hostName + 'data_cam/' + fileName
 # get folder to store preview images
-previewPath = '/home/pi/nbolab_EXPERIMENTS/' + hostName + 'preview_cam'
+previewPath = '/home/pi/nbolab_EXPERIMENTS/' + hostName + 'preview_cam/'
+# counter to name image
+counter = 0
 
 # algorithm parameters
 d = 30  # filter size
@@ -91,6 +93,9 @@ with open(csvPath, 'w') as f:
             480
         ]
         writer.writerow(log)
+        # write preview images
+        cv2.imwrite(previewPath + str(counter), framePost)
+        counter = counter + 1
 
 # stop stream
 stream.stop()
