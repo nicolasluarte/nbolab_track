@@ -13,7 +13,7 @@ fileName = 'cam_recording_' + \
 hostName = socket.gethostname() + '/'
 # get background path
 backgroundPath = '/home/pi/nbolab_EXPERIMENTS/' + \
-    hostName + 'background/' + 'bg.png'
+    hostName + 'background/' + 'bg.jpg'
 # get folder to store csv file
 csvPath = '/home/pi/nbolab_EXPERIMENTS/' + hostName + 'data_cam/' + fileName
 # get folder to store preview images
@@ -97,7 +97,9 @@ with open(csvPath, 'w') as f:
         ]
         writer.writerow(log)
         # write preview images
-        cv2.imwrite(previewPath + str(counter) + '.png', frame)
+        imgJpg = cv2.circle(frame, (centroidX, centroidY), radius=10,
+                            color=(0, 0, 255), thickness=-1)
+        cv2.imwrite(previewPath + str(counter) + '.jpg', imgJpg)
         counter = counter + 1
         print("frame done")
 
