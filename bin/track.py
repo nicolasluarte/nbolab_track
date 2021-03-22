@@ -66,36 +66,33 @@ with open(csvPath, 'w') as f:
     while True:
         # start reading from cam stream
         frame = stream.read()
+
         # image processing
-        frameDiff = bgfg_diff(bg, frame)  # background - foreground
-        framePost, tailImage = postprocess_image(
-            frameDiff, kx, ky)  # further processing
-        # contour extraction
-        extractionBody, extractionTail, centroidX, centroidY, centroidXT, centroidYT, centroidXH, centroidYH, area, err = contour_extraction(
-            framePost, tailImage, 640, 480)
+        fgFilter = preprocess_image(frame, d, sigma1, sigma2)
+        imgDiff = bgfg_diff(bg, fgFilter, d, sigma1, sigma2)
+        contour = contour_extraction(imgDiff)
+        postProc = postprocess_image(contour, kx, ky)
+        body = cv2.moments(postProc)
+        centroidX = int(body['m10'] / body['m00'])
+        centroidY = int(body['m01'] / body['m00'])
+
         # timing related stuff
         timeStamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
         execTime = (time.time() - startTime)
 
-        # data log
-        log = list(map(int, timeStamp.split())) + \
-            [
-            centroidX,
-            centroidY,
-            centroidXT,
-            centroidYT,
-            centroidXH,
-            centroidYH,
-            area,
-            err,
-            execTime,
-            640,
-            480
-        ]
-        writer.writerow(log)
-        # write preview images
-        cv2.imwrite(previewPath + str(counter) + '.png', framePost)
-        counter = counter + 1
+    # data log
+    log = list(map(int, timeStamp.split())) + \
+        [
+        centroidX,
+        centroidY,
+        execTime,
+        640,
+        480
+    ]
+    writer.writerow(log)
+    # write preview images
+    cv2.imwrite(previewPath + str(counter) + '.png', postProc)
+    counter = counter + 1
 
 # stop stream
 stream.stop()
