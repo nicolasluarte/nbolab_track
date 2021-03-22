@@ -12,7 +12,8 @@ fileName = 'cam_recording_' + \
 # get host name
 hostName = socket.gethostname()
 # get background path
-backgroundPath = '/home/pi/nbolab_EXPERIMENTS/' + hostName + 'background'
+backgroundPath = '/home/pi/nbolab_EXPERIMENTS/' + \
+    hostName + 'background/' + 'bg.png'
 # get folder to store csv file
 csvPath = '/home/pi/nbolab_EXPERIMENTS/' + hostName + 'data_cam/' + fileName
 # get folder to store preview images
