@@ -79,7 +79,7 @@ with open(csvPath, 'w') as f:
     while True:
         # timing related stuff
 
-        mp.Pool(4).map(videoP, range(4))
+        mp.Pool(4).map(videoP)
 
         # data log
         # write preview images
