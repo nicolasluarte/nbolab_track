@@ -66,37 +66,37 @@ with open(csvPath, 'w') as f:
         # start reading from cam stream
         frame = stream.read()
         # image processing
-        frameDiff = bgfg_diff(bg, frame)  # background - foreground
-        framePost = postprocess_image(
-            frameDiff, kx, ky)  # further processing
+       # frameDiff = bgfg_diff(bg, frame)  # background - foreground
+       # framePost = postprocess_image(
+       #     frameDiff, kx, ky)  # further processing
         # contour extraction
-        centroidX, centroidY, area, err = contour_extraction(
-            framePost, w, h)
+       # centroidX, centroidY, area, err = contour_extraction(
+       #     framePost, w, h)
         # timing related stuff
-        timeStamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
-        execTime = (time.time() - startTime)
+       # timeStamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
+       # execTime = (time.time() - startTime)
 
         # data log
-        log = list(map(int, timeStamp.split())) + \
-            [
-            centroidX,
-            centroidY,
-            area,
-            err,
-            execTime,
-            w,
-            h
-        ]
-        writer.writerow(log)
+       # log = list(map(int, timeStamp.split())) + \
+       #     [
+       #     centroidX,
+       #     centroidY,
+       #     area,
+       #     err,
+       #     execTime,
+       #     w,
+       #     h
+       # ]
+       # writer.writerow(log)
         # write preview images
-        if centroidX == 'None':
-            centroidX = 0
-        if centroidY == 'None':
-            centroidY = 0
-        imgJpg = cv2.circle(framePost, (int(centroidX), int(centroidY)), radius=10,
-                            color=(0, 0, 255), thickness=-1)
-        cv2.imwrite(previewPath + str(counter) + '.jpg', imgJpg)
-        counter = counter + 1
+       # if centroidX == 'None':
+       #     centroidX = 0
+       # if centroidY == 'None':
+       #     centroidY = 0
+       # imgJpg = cv2.circle(framePost, (int(centroidX), int(centroidY)), radius=10,
+       #                     color=(0, 0, 255), thickness=-1)
+       # cv2.imwrite(previewPath + str(counter) + '.jpg', imgJpg)
+       # counter = counter + 1
         print(execTime)
 
 # stop stream
