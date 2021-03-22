@@ -74,7 +74,7 @@ with open(csvPath, 'w') as f:
        #     framePost, w, h)
         # timing related stuff
        # timeStamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
-       # execTime = (time.time() - startTime)
+        execTime = (time.time() - startTime)
 
         # data log
        # log = list(map(int, timeStamp.split())) + \
