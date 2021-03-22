@@ -10,7 +10,7 @@ from track_functions import *
 fileName = 'cam_recording_' + \
     datetime.datetime.now().strftime("%H:%M:%S_%d%m%Y") + '.csv'
 # get host name
-hostName = socket.gethostname()
+hostName = socket.gethostname() + '/'
 # get background path
 backgroundPath = '/home/pi/nbolab_EXPERIMENTS/' + \
     hostName + 'background/' + 'bg.png'
