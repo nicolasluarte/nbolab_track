@@ -58,7 +58,7 @@ def videoP(g):
         centroidY = 0
     imgJpg = cv2.circle(framePost, (int(centroidX), int(centroidY)), radius=10,
                         color=(0, 0, 255), thickness=-1)
-    cv2.imwrite(previewPath + str(counter) + '.jpg', imgJpg)
+    cv2.imwrite(previewPath + str(g) + '.jpg', imgJpg)
     print(centroidX, centroidY, area, err)
 
 
