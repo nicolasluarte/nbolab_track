@@ -55,6 +55,7 @@ with open(csvPath, 'w') as f:
         "headCentroidY",
         "bodyContourArea",
         "error",
+        "executionTime",
         "frameWidth",
         "frameHeight"
     ])
