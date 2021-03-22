@@ -94,7 +94,7 @@ with open(csvPath, 'w') as f:
         ]
         writer.writerow(log)
         # write preview images
-        cv2.imwrite(previewPath + str(counter) + '.png', framePost)
+        cv2.imwrite(previewPath + str(counter) + '.png', frame)
         counter = counter + 1
         print("frame done")
 
