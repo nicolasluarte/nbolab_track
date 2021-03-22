@@ -5,6 +5,7 @@ import csv
 import datetime
 import socket
 from fast_track import *
+import multiprocessing as mp
 
 # file name
 fileName = 'cam_recording_' + \
@@ -40,6 +41,20 @@ bg = cv2.resize(bg, (w, h), interpolation=cv2.INTER_AREA)
 stream = PiGear(resolution=(w, h), framerate=60,
                 colorspace='COLOR_BGR2GRAY').start()
 
+
+def videoP(bg, frame, kx, ky, w, h):
+    # start reading from cam stream
+    frame = stream.read()
+    # image processing
+    frameDiff = bgfg_diff(bg, frame)  # background - foreground
+    framePost = postprocess_image(
+        frameDiff, kx, ky)  # further processing
+    # contour extraction
+    centroidX, centroidY, area, err = contour_extraction(
+        framePost, w, h)
+    print(centroidX, centroidY, area, err)
+
+
 # open the csv and write headers
 with open(csvPath, 'w') as f:
     # write headers
@@ -62,42 +77,12 @@ with open(csvPath, 'w') as f:
     ])
 
     while True:
-        startTime = time.time()
-        # start reading from cam stream
-        frame = stream.read()
-        # image processing
-        frameDiff = bgfg_diff(bg, frame)  # background - foreground
-        framePost = postprocess_image(
-            frameDiff, kx, ky)  # further processing
-        # contour extraction
-        centroidX, centroidY, area, err = contour_extraction(
-            framePost, w, h)
         # timing related stuff
-        timeStamp = datetime.datetime.now().strftime("%Y %m %d %H %M %S %f")
-        execTime = (time.time() - startTime)
+
+        mp.Pool(4).map(videoP, range(4))
 
         # data log
-        log = list(map(int, timeStamp.split())) + \
-            [
-            centroidX,
-            centroidY,
-            area,
-            err,
-            execTime,
-            w,
-            h
-        ]
-        writer.writerow(log)
         # write preview images
-        if centroidX == 'None':
-            centroidX = 0
-        if centroidY == 'None':
-            centroidY = 0
-        imgJpg = cv2.circle(framePost, (int(centroidX), int(centroidY)), radius=10,
-                            color=(0, 0, 255), thickness=-1)
-        cv2.imwrite(previewPath + str(counter) + '.jpg', imgJpg)
-        counter = counter + 1
-        print(execTime)
 
 # stop stream
 stream.stop()
