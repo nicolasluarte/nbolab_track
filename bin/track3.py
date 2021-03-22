@@ -52,13 +52,6 @@ def videoP(g):
     # contour extraction
     centroidX, centroidY, area, err = contour_extraction(
         framePost, w, h)
-    if centroidX == 'None':
-        centroidX = 0
-    if centroidY == 'None':
-        centroidY = 0
-    imgJpg = cv2.circle(framePost, (int(centroidX), int(centroidY)), radius=10,
-                        color=(0, 0, 255), thickness=-1)
-    cv2.imwrite(previewPath + str(counter) + '.jpg', imgJpg)
     print(centroidX, centroidY, area, err)
 
 
