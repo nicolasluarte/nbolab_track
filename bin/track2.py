@@ -61,8 +61,8 @@ with open(csvPath, 'w') as f:
         "frameHeight"
     ])
 
-    startTime = time.time()
     while True:
+        startTime = time.time()
         # start reading from cam stream
         frame = stream.read()
         # image processing
